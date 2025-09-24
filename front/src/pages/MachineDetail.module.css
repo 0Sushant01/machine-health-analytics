@@ -1,0 +1,89 @@
+.navButton {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 1px 4px #e5e7eb;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.18s;
+  margin-right: 8px;
+}
+.navButton:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px) scale(1.04);
+}
+.detailContainer {
+  background: #f9fafb;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px #e5e7eb;
+  padding: 2.5rem 2rem;
+  margin: 2rem auto;
+  max-width: 900px;
+  font-family: 'Inter', sans-serif;
+}
+.title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+}
+.infoSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 4px #e5e7eb;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2.5rem;
+  font-size: 1.1rem;
+}
+.subtitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 1rem;
+}
+.machineTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 4px #e5e7eb;
+  overflow: hidden;
+}
+.machineTable th {
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 600;
+  padding: 12px 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+.machineTable td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 1rem;
+}
+.machineTable tr:nth-child(even) {
+  background: #f9fafb;
+}
+.machineTable tr:hover {
+  background: #e0e7ef;
+  transition: background 0.2s;
+}
+.loading {
+  text-align: center;
+  color: #2563eb;
+  font-size: 1.3rem;
+  margin-top: 3rem;
+}
+.error {
+  text-align: center;
+  color: #ef4444;
+  font-size: 1.2rem;
+  margin-top: 3rem;
+}

@@ -1,0 +1,77 @@
+/* MachineList.module.css */
+
+.machineListContainer {
+  padding: 24px;
+}
+
+.machineListTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #374151;
+}
+
+.filterBar {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  background: #fff;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.filterInput, .filterSelect {
+  border: 1px solid #d1d5db;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  width: 8rem;
+  font-size: 0.95rem;
+}
+
+.machineTable {
+  min-width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.machineTable th {
+  background: #f3f4f6;
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.machineTable td {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: #374151;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.machineTable tr:hover {
+  background: #f1f5f9;
+}
+
+.machineNameCell {
+  font-weight: 600;
+  color: #2563eb;
+  background: #dbeafe;
+  border-radius: 0.5rem;
+}
+
+.statusCell {
+  font-weight: 600;
+  color: #fff;
+  background: #3b82f6;
+  border-radius: 0.5rem;
+  text-align: center;
+}

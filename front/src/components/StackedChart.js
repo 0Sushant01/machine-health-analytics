@@ -6,10 +6,10 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "rec
 
 // Colors: green for Normal, yellow for Alert, red for Unacceptable, black for Satisfactory
 const COLORS = {
-  Normal: "#22c55e",        // green
-  Alert: "#facc15",         // yellow
-  Unacceptable: "#ef4444",  // red
-  Satisfactory: "#000000"   // black
+  Normal: "rgb(34, 197, 94)",        // green
+  Alert: "rgb(250, 204, 21)",         // yellow
+  Unacceptable: "rgb(239, 68, 68)",  // red
+  Satisfactory: "rgb(59, 130, 246)"   // black
 };
 
 const StackedChart = ({ data, onBarClick }) => {

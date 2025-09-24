@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // import SummaryCard from "../components/SummaryCards"; // removed unused import
 import PieChart from "../components/PieChart";
+import CustomerTrendChart from "../components/CustomerTrendChart";
 import CustomerTrendStackedChart from "../components/CustomerTrendStackedChart";
 import StackedChart from "../components/StackedChart";
 import Filters from "../components/Filters";
@@ -13,6 +14,7 @@ import "./MainDashboard.css"; // custom styles
 Modal.setAppElement("#root");
 
 const MainDashboard = () => {
+  const [showStacked, setShowStacked] = useState(true);
   const [filters, setFilters] = useState({ date_from: "2025-08-10", date_to: "2025-08-17" });
   const [machines, setMachines] = useState([]);
   const [summary, setSummary] = useState({ totalMachines: 0, statuses: {} });
@@ -108,12 +110,47 @@ const MainDashboard = () => {
       {/* Charts Section */}
       <div className="charts-section">
         <div className="chart-card">
-          <CustomerTrendStackedChart
-            machines={machines}
-            onBarClick={({ customerId, date }) => {
-              navigate(`/machines?customerId=${encodeURIComponent(customerId)}&date_from=${encodeURIComponent(date)}&date_to=${encodeURIComponent(date)}`);
-            }}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+            <button
+              onClick={() => setShowStacked(true)}
+              style={{
+                marginRight: 8,
+                padding: '6px 16px',
+                background: showStacked ? '#3b82f6' : '#e5e7eb',
+                color: showStacked ? '#fff' : '#111827',
+                border: 'none',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              Stacked Chart
+            </button>
+            <button
+              onClick={() => setShowStacked(false)}
+              style={{
+                padding: '6px 16px',
+                background: !showStacked ? '#3b82f6' : '#e5e7eb',
+                color: !showStacked ? '#fff' : '#111827',
+                border: 'none',
+                borderRadius: 4,
+                cursor: 'pointer',
+                fontWeight: 600
+              }}
+            >
+              Trend Chart
+            </button>
+          </div>
+          {showStacked ? (
+            <CustomerTrendStackedChart
+              machines={machines}
+              onBarClick={({ customerId, date }) => {
+                navigate(`/machines?customerId=${encodeURIComponent(customerId)}&date_from=${encodeURIComponent(date)}&date_to=${encodeURIComponent(date)}`);
+              }}
+            />
+          ) : (
+            <CustomerTrendChart machines={machines} />
+          )}
         </div>
         <div className="chart-card">
           <h3>Area Machine Distribution</h3>

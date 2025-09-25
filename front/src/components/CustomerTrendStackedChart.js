@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from "recharts";
 
+// Reusable muted, professional palette for customer stacks
 const COLORS = [
-  "#2563eb", "#22c55e", "#f59e42", "#ef4444", "#a855f7", "#14b8a6", "#fbbf24", "#6366f1",
-  "#0ea5e9", "#f472b6", "#facc15", "#7c3aed", "#059669", "#eab308", "#f43f5e", "#3b82f6"
+  "#0f609b", "#16a34a", "#f59e0b", "#ef4444", "#6d28d9", "#0891b2", "#fb923c", "#475569",
+  "#60a5fa", "#f472b6", "#facc15", "#7c3aed", "#059669", "#eab308", "#f43f5e", "#3b82f6"
 ];
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -62,7 +63,6 @@ const CustomerTrendStackedChart = ({ machines, onBarClick }) => {
 
   return (
     <div style={{ width: "100%", maxWidth: 800, margin: "0 auto 30px auto", position: 'relative' }}>
-      <h3>Customer Trend</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />

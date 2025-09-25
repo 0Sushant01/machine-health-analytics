@@ -4,12 +4,12 @@ import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 
 
-// Colors: green for Normal, yellow for Alert, red for Unacceptable, black for Satisfactory
+// Semantic status palette: Normal (green), Satisfactory (slate/indigo), Alert (amber), Unacceptable (red)
 const COLORS = {
-  Normal: "rgb(34, 197, 94)",        // green
-  Alert: "rgb(250, 204, 21)",         // yellow
-  Unacceptable: "rgb(239, 68, 68)",  // red
-  Satisfactory: "rgb(59, 130, 246)"   // black
+  Normal: "#22c55e",        // green
+  Satisfactory: "#3b82f6",  // slate (less harsh than black)
+  Alert: "#facc15",         // amber
+  Unacceptable: "#ef4444"   // red
 };
 
 const StackedChart = ({ data, onBarClick }) => {

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // import SummaryCard from "../components/SummaryCards"; // removed unused import
-import PieChart from "../components/PieChart";
-import CustomerTrendChart from "../components/CustomerTrendChart";
 import CustomerTrendStackedChart from "../components/CustomerTrendStackedChart";
+import CustomerTrendChart from "../components/CustomerTrendChart";
 import StackedChart from "../components/StackedChart";
 import Filters from "../components/Filters";
 import { fetchMachines } from "../services/api";
@@ -14,12 +13,11 @@ import "./MainDashboard.css"; // custom styles
 Modal.setAppElement("#root");
 
 const MainDashboard = () => {
-  const [showStacked, setShowStacked] = useState(true);
   const [filters, setFilters] = useState({ date_from: "2025-08-10", date_to: "2025-08-17" });
   const [machines, setMachines] = useState([]);
   const [summary, setSummary] = useState({ totalMachines: 0, statuses: {} });
-  const [pieData, setPieData] = useState([]);
   const [stackedData, setStackedData] = useState({});
+  const [trendView, setTrendView] = useState('stacked'); // 'stacked' or 'line'
   // const [statusFilter, setStatusFilter] = useState(""); // removed unused
   const [modalData, setModalData] = useState(null);
 
@@ -34,13 +32,10 @@ const MainDashboard = () => {
   useEffect(() => {
     const statuses = ["Normal", "Satisfactory", "Alert", "Unacceptable"];
     const statusCount = { Normal: 0, Satisfactory: 0, Alert: 0, Unacceptable: 0 };
-    const pieMap = {};
     const dateMap = {};
 
     machines.forEach((m) => {
       if (statuses.includes(m.statusName)) statusCount[m.statusName]++;
-      // Pie chart by areaId
-      if (m.areaId) pieMap[m.areaId] = (pieMap[m.areaId] || 0) + 1;
 
       const date = m.dataUpdatedTime.split("T")[0];
       if (!dateMap[date]) dateMap[date] = { Normal: 0, Satisfactory: 0, Alert: 0, Unacceptable: 0 };
@@ -48,7 +43,6 @@ const MainDashboard = () => {
     });
 
     setSummary({ totalMachines: machines.length, statuses: statusCount });
-    setPieData(Object.entries(pieMap).map(([areaId, count]) => ({ _id: areaId, count })));
 
     const stacked = { dates: Object.keys(dateMap).sort(), statuses: { Normal: [], Satisfactory: [], Alert: [], Unacceptable: [] } };
     stacked.dates.forEach((date) => statuses.forEach((s) => stacked.statuses[s].push(dateMap[date][s])));
@@ -75,73 +69,69 @@ const MainDashboard = () => {
     <div className="dashboard-container">
       {/* Header */}
       <header className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">Factory Monitoring Dashboard</h1>
-          <p className="dashboard-subtitle">Real-time monitoring of industrial machines</p>
-        </div>
-        <div className="dashboard-filters">
-          <Filters setFilters={setFilters} />
+        <div style={{ width: '100%', maxWidth: 1120 }}>
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+            <h1 className="dashboard-title">Factory Monitoring Dashboard</h1>
+            <p className="dashboard-subtitle">Real-time monitoring of industrial machines</p>
+          </div>
+          <div style={{ background: '#fff', padding: 16, borderRadius: 12, boxShadow: '0 1px 6px rgba(15,23,42,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button onClick={() => navigate('/')} className="navbar-link">Dashboard</button>
+                <button onClick={() => navigate('/machines')} className="navbar-link" style={{ background: '#10b981', borderColor: '#10b981' }}>Machine List</button>
+              </div>
+
+              <div style={{ flex: 1 }} />
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Filters setFilters={setFilters} compact={true} />
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* Summary Section */}
       <div className="summary-section">
-        <div className="total-card">
-          <h2>Total Machines</h2>
-          <p>{summary.totalMachines}</p>
+  <div className="total-card" style={{ '--accent-color': '#ffffff' }}>
+          <h2 className="total-card-title" style={{ fontWeight: 800 }}>Total Machines</h2>
+          <p className="total-card-value">{summary.totalMachines}</p>
         </div>
-        {Object.keys(summary.statuses).map((status) => (
-          <div
-            key={status}
-            className="total-card"
-            style={{ borderTop: `4px solid ${
-              status === 'Normal' ? '#22c55e' :
-              status === 'Satisfactory' ? '#3b82f6' :
-              status === 'Alert' ? '#facc15' :
-              status === 'Unacceptable' ? '#ef4444' : '#e5e7eb'
-            }` }}
-          >
-            <h2 style={{ color: '#6b7280', fontSize: '1.25rem', marginBottom: 8 }}>{status}</h2>
-            <p style={{ color: '#111827', fontSize: '2.5rem', fontWeight: 700 }}>{summary.statuses[status]}</p>
-          </div>
-        ))}
+        {Object.keys(summary.statuses).map((status) => {
+          const accent = status === 'Normal' ? '#22c55e' :
+            status === 'Satisfactory' ? '#3b82f6' :
+            status === 'Alert' ? '#facc15' :
+            status === 'Unacceptable' ? '#ef4444' : '#e5e7eb';
+          return (
+            <div
+              key={status}
+              className="total-card"
+              style={{ '--accent-color': accent }}
+            >
+              <h2 className="total-card-title">{status}</h2>
+              <p className="total-card-value">{summary.statuses[status]}</p>
+            </div>
+          );
+        })}
       </div>
 
       {/* Charts Section */}
       <div className="charts-section">
         <div className="chart-card">
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-            <button
-              onClick={() => setShowStacked(true)}
-              style={{
-                marginRight: 8,
-                padding: '6px 16px',
-                background: showStacked ? '#3b82f6' : '#e5e7eb',
-                color: showStacked ? '#fff' : '#111827',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-                fontWeight: 600
-              }}
-            >
-              Stacked Chart
-            </button>
-            <button
-              onClick={() => setShowStacked(false)}
-              style={{
-                padding: '6px 16px',
-                background: !showStacked ? '#3b82f6' : '#e5e7eb',
-                color: !showStacked ? '#fff' : '#111827',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-                fontWeight: 600
-              }}
-            >
-              Trend Chart
-            </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <h3 style={{ margin: 0 }}>Customer Trend</h3>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setTrendView('stacked')}
+                style={{ padding: '6px 10px', borderRadius: 6, border: trendView === 'stacked' ? '1px solid #111827' : '1px solid #e5e7eb', background: trendView === 'stacked' ? '#111827' : '#fff', color: trendView === 'stacked' ? '#fff' : '#111827', cursor: 'pointer' }}
+              >Stacked</button>
+              <button
+                onClick={() => setTrendView('line')}
+                style={{ padding: '6px 10px', borderRadius: 6, border: trendView === 'line' ? '1px solid #111827' : '1px solid #e5e7eb', background: trendView === 'line' ? '#111827' : '#fff', color: trendView === 'line' ? '#fff' : '#111827', cursor: 'pointer' }}
+              >Line</button>
+            </div>
           </div>
-          {showStacked ? (
+          {trendView === 'stacked' ? (
             <CustomerTrendStackedChart
               machines={machines}
               onBarClick={({ customerId, date }) => {
@@ -151,10 +141,6 @@ const MainDashboard = () => {
           ) : (
             <CustomerTrendChart machines={machines} />
           )}
-        </div>
-        <div className="chart-card">
-          <h3>Area Machine Distribution</h3>
-          {pieData.length > 0 ? <PieChart data={pieData} /> : <p>No data available</p>}
         </div>
         <div className="chart-card">
           <h3>Machine Status Trends</h3>

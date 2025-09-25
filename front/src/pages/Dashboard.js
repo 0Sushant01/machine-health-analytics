@@ -42,8 +42,20 @@ const Dashboard = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Factory Monitoring Dashboard</h1>
-      <Filters setFilters={setFilters} />
+      <div style={{ textAlign: 'center', marginBottom: 12 }}>
+        <h1 style={{ fontSize: 32, fontWeight: 800, color: '#111827' }}>Factory Monitoring Dashboard</h1>
+        <p style={{ color: '#6b7280', marginTop: 6 }}>Real-time monitoring of industrial machines</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => window.location.href = '/'} className="navbar-link">Dashboard</button>
+            <button onClick={() => window.location.href = '/machines'} className="navbar-link" style={{ background: '#10b981', borderColor: '#10b981' }}>Machine List</button>
+          </div>
+            <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Filters setFilters={setFilters} compact={true} />
+          </div>
+        </div>
+      </div>
       <SummaryCards totalMachines={summary.totalMachines} statuses={summary.statuses} />
       <MachineTable machines={machines} />
 

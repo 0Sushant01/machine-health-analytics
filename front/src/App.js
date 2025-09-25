@@ -12,21 +12,8 @@ function App() {
       <div className="min-h-screen bg-gray-100">
         {/* Navbar */}
         <nav className="bg-white shadow-md p-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold">Factory Monitoring</h1>
-          <div className="space-x-4">
-            <Link
-              to="/"
-              className="navbar-link bg-blue-500 hover:bg-blue-600"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/machines"
-              className="navbar-link bg-green-500 hover:bg-green-600"
-            >
-              Machine List
-            </Link>
-          </div>
+          <div />
+          <div />
         </nav>
 
         {/* Page Content */}

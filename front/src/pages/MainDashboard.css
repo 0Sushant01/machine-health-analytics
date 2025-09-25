@@ -2,26 +2,122 @@
   min-height: 100vh;
   background: #f3f4f6;
   padding: 2rem;
-  font-family: 'Inter', sans-serif;
+  font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .dashboard-header {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  margin-bottom: 2rem;
+  justify-content: center; /* center the title block */
+  align-items: center;
+  margin: 2rem auto 2.5rem auto; /* more breathing room */
   gap: 1rem;
+  text-align: center;
+/* search-input removed project-wide */
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.dashboard-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.dashboard-left {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.dashboard-right {
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  min-width: 260px; /* slightly smaller to match MachineList */
+  box-shadow: 0 6px 18px rgba(15,23,42,0.04);
+}
+
+.dashboard-datefilters {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-datefilters input[type="date"] {
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.6rem;
+  border: 1px solid #e5e7eb;
+  font-family: inherit;
+  font-size: 0.95rem;
+  margin-left: 0.5rem;
+}
+
+.dashboard-datefilters label {
+  font-size: 0.85rem;
+  color: #374151;
+  margin-right: 0.25rem;
+}
+
+/* compact Filters component styles */
+.filters-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.filters-field {
+  display: flex;
+  flex-direction: column;
+}
+.filters-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+.filters-input-date {
+  padding: 0.38rem 0.55rem;
+  border-radius: 0.55rem;
+  border: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+}
+.filters-apply-btn {
+  padding: 0.45rem 0.85rem;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 0.6rem;
+  border: none;
+  font-weight: 700;
+}
+
+.dashboard-filters {
+  margin-top: 0.75rem;
 }
 
 .dashboard-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.5px;
 }
 
 .dashboard-subtitle {
   color: #6b7280;
   margin-top: 0.25rem;
+  font-size: 1rem;
+}
+
+/* Responsive tweak: ensure header remains centered on small screens */
+@media (max-width: 640px) {
+  .dashboard-title { font-size: 1.75rem; }
+  .dashboard-header { padding: 0 1rem; }
 }
 
 .summary-section {
@@ -33,23 +129,39 @@
 
 .total-card {
   background: #ffffff;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+  padding: 0.9rem 0.9rem;
+  border-radius: 0.8rem;
+  box-shadow: 0 6px 12px rgba(15,23,42,0.04);
   text-align: center;
-  transition: transform 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  border: 1.5px solid rgba(0,0,0,0.04);
+  min-width: 160px;
 }
 .total-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(15,23,42,0.07);
 }
-.total-card h2 {
-  font-size: 1.25rem;
+
+
+.total-card-title {
+  font-size: 0.98rem;
   color: #6b7280;
+  margin-bottom: 6px;
+  font-weight: 700; /* ensure titles are bold */
+  font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
 }
-.total-card p {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #111827;
+.total-card-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 6px;
+  font-family: Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Accent border overlay using box-shadow inset */
+.total-card[style] {
+  box-shadow: 0 6px 12px rgba(15,23,42,0.04), inset 0 0 0 2px var(--accent-color, transparent);
 }
 
 .charts-section {

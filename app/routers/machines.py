@@ -1,5 +1,52 @@
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Body
 from typing import Optional
+import requests
+import json
+
+router = APIRouter()
+
+@router.post("/external-ai-data/")
+async def fetch_external_ai_data(
+    machineId: str = Body(...),
+    bearingLocationId: str = Body(...),
+    Axis_Id: str = Body("H-Axis"),
+    Analytics_Types: str = Body("MF"),
+):
+    """
+    Calls the external AI Data API, tries OFFLINE first, then ONLINE if needed.
+    """
+    url = "https://srcapiv2.aams.io/AAMS/AI/Data"
+    headers = {"Content-Type": "application/json"}
+    payload_offline = json.dumps({
+        "machineId": machineId,
+        "bearingLocationId": bearingLocationId,
+        "Axis_Id": Axis_Id,
+        "type": "OFFLINE",
+        "Analytics_Types": Analytics_Types
+    })
+    payload_online = json.dumps({
+        "machineId": machineId,
+        "bearingLocationId": bearingLocationId,
+        "Axis_Id": Axis_Id,
+        "type": "ONLINE",
+        "Analytics_Types": Analytics_Types
+    })
+    try:
+        resp = requests.post(url, headers=headers, data=payload_offline, timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+        data["mode"] = "OFFLINE"
+        return data
+    except Exception as e:
+        # Try ONLINE if OFFLINE fails
+        try:
+            resp = requests.post(url, headers=headers, data=payload_online, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+            data["mode"] = "ONLINE"
+            return data
+        except Exception as e2:
+            raise HTTPException(status_code=500, detail=f"Both OFFLINE and ONLINE failed: {str(e2)}")
 from app.db import db
 from bson import ObjectId
 router = APIRouter()

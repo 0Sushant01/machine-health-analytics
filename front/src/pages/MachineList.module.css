@@ -15,20 +15,26 @@
   margin-bottom: 1rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
+  gap: 0.75rem; /* tighter gap */
+  align-items: center;
   background: #fff;
-  padding: 1rem;
+  padding: 0.75rem 1rem; /* compact card padding */
   border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .filterInput, .filterSelect {
   border: 1px solid #d1d5db;
-  padding: 0.5rem;
+  padding: 0.45rem 0.6rem; /* compact tap/click area */
   border-radius: 0.375rem;
-  width: 8rem;
+  width: 9rem; /* compact select boxes */
   font-size: 0.95rem;
+}
+
+/* Date inputs compact */
+.filterInput[type="date"] {
+  padding: 0.4rem 0.6rem;
+  min-width: 10rem;
 }
 
 .machineTable {
@@ -64,14 +70,27 @@
 .machineNameCell {
   font-weight: 600;
   color: #2563eb;
-  background: #dbeafe;
-  border-radius: 0.5rem;
+  background: rgba(219,234,254,0.4); /* lighter, less pronounced */
+  border-radius: 0.25rem; /* smaller radius */
 }
 
 .statusCell {
+  /* cell wrapper - keep layout only; badge inside shows the actual color */
   font-weight: 600;
+  color: inherit;
+  background: transparent;
+  border-radius: 0.25rem;
+  text-align: center;
+}
+
+.statusBadge {
+  display: inline-block;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
   color: #fff;
-  background: #3b82f6;
-  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1;
+  min-width: 6rem;
   text-align: center;
 }

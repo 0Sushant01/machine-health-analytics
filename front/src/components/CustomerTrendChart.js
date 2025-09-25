@@ -31,7 +31,6 @@ const CustomerTrendChart = ({ machines }) => {
   const options = { responsive: true, plugins: { legend: { position: "top" } } };
   return (
     <div style={{ width: "100%", maxWidth: 800, margin: "0 auto 30px auto" }}>
-      <h3>Customer Trend</h3>
       <Line data={chartData} options={options} />
     </div>
   );

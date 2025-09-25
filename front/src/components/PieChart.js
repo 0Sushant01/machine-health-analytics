@@ -2,7 +2,8 @@
 import React from "react";
 import { PieChart as RePieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const COLORS = ["#2563eb", "#22c55e", "#f59e42", "#ef4444", "#a855f7", "#14b8a6", "#fbbf24", "#6366f1"];
+// Cohesive admin-friendly palette: blues, greens, amber, red, purple, teal, orange, slate
+const COLORS = ["#0f609b", "#16a34a", "#f59e0b", "#ef4444", "#6d28d9", "#0891b2", "#fb923c", "#475569"];
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {

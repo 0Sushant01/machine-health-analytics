@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Filters from "../components/Filters";
 import { useLocation } from "react-router-dom";
 import { fetchMachines } from "../services/api";
 import "../App.css";
@@ -6,6 +7,14 @@ import styles from "./MachineList.module.css";
 
 
 const statusOptions = ["", "Normal", "Satisfactory", "Alert", "Unacceptable"];
+
+// Semantic status palette (keep consistent with StackedChart.js)
+const STATUS_COLORS = {
+  Normal: "#16a34a",
+  Satisfactory: "#475569",
+  Alert: "#f59e0b",
+  Unacceptable: "#ef4444",
+};
 
 
 
@@ -88,8 +97,22 @@ const MachineList = () => {
   const paginatedMachines = sortedMachines.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   return (
-    <div className={styles.machineListContainer} style={{ background: '#f9fafb', borderRadius: 12, boxShadow: '0 2px 8px #e5e7eb', padding: 32, margin: 24 }}>
-      <h2 className={styles.machineListTitle} style={{ fontSize: 28, fontWeight: 700, color: '#1e293b', marginBottom: 24, letterSpacing: 1 }}>Machine List</h2>
+      <div className={styles.machineListContainer} style={{ background: '#f9fafb', borderRadius: 12, boxShadow: '0 2px 8px #e5e7eb', padding: 32, margin: 24 }}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ textAlign: 'left', marginBottom: 12 }}>
+          <h2 className={styles.machineListTitle} style={{ fontSize: 28, fontWeight: 700, color: '#1e293b', letterSpacing: 1 }}>Machine List</h2>
+        </div>
+        <div style={{ background: '#fff', padding: 12, borderRadius: 10, boxShadow: '0 1px 6px rgba(15,23,42,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={() => window.location.href = '/'} className="navbar-link">Dashboard</button>
+              <button onClick={() => window.location.href = '/machines'} className="navbar-link" style={{ background: '#10b981', borderColor: '#10b981' }}>Machine List</button>
+            </div>
+            <div style={{ flex: 1 }} />
+            {/* header compact filters removed */}
+          </div>
+        </div>
+      </div>
       {/* Filters */}
       <div className={styles.filterBar} style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 24, background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 1px 4px #e5e7eb' }}>
         <div style={{ minWidth: 120 }}>
@@ -194,9 +217,16 @@ const MachineList = () => {
                   onMouseOut={e => e.currentTarget.style.background = idx % 2 === 0 ? '#f9fafb' : '#fff'}
                 >
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.customerId}</td>
-                  <td className={styles.machineNameCell} style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.name}</td>
+                  <td className={styles.machineNameCell} style={{ padding: '6px 8px', borderBottom: '1px solid rgba(229,231,235,0.6)' }}>{m.name}</td>
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m._id}</td>
-                  <td className={styles.statusCell} style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.statusName}</td>
+                  <td className={styles.statusCell} style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
+                    <span
+                      className={styles.statusBadge}
+                      style={{ background: STATUS_COLORS[m.statusName] || '#6b7280' }}
+                    >
+                      {m.statusName}
+                    </span>
+                  </td>
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.areaId}</td>
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.subAreaId || "-"}</td>
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.dataUpdatedTime ? m.dataUpdatedTime.split("T")[0] : ""}</td>

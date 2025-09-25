@@ -1,6 +1,6 @@
 
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainDashboard from "./pages/MainDashboard";
 import MachineList from "./pages/MachineList";
 import MachineDetail from "./pages/MachineDetail";

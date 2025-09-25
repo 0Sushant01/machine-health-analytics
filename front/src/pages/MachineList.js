@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Filters from "../components/Filters";
 import { useLocation } from "react-router-dom";
 import { fetchMachines } from "../services/api";
 import "../App.css";
@@ -36,6 +35,7 @@ const MachineList = () => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(getInitialFilters);
   const [allMachines, setAllMachines] = useState([]);
+  // const [error, setError] = useState(null);
 
   // Fetch Machines
   // Fetch all machines for dynamic filter options (customerId, areaId)
@@ -55,18 +55,20 @@ const MachineList = () => {
     const loadMachines = async () => {
       setLoading(true);
       try {
+  // setError(null);
         // Only send non-empty filters to backend
         const params = {};
-  if (filters.areaId) params.areaId = filters.areaId;
-  if (filters.subAreaId) params.subAreaId = filters.subAreaId;
-  if (filters.statusName) params.status = filters.statusName;
-  if (filters.customerId) params.customerId = filters.customerId;
-  if (filters.date_from) params.date_from = filters.date_from;
-  if (filters.date_to) params.date_to = filters.date_to;
+        if (filters.areaId) params.areaId = filters.areaId;
+        if (filters.subAreaId) params.subAreaId = filters.subAreaId;
+        if (filters.statusName) params.status = filters.statusName;
+        if (filters.customerId) params.customerId = filters.customerId;
+        if (filters.date_from) params.date_from = filters.date_from;
+        if (filters.date_to) params.date_to = filters.date_to;
         const res = await fetchMachines(params);
         setMachines(res.machines || []);
       } catch (error) {
-        console.error("Error fetching machines:", error);
+  // setError("Failed to fetch machines. Please try again later.");
+        setMachines([]);
       } finally {
         setLoading(false);
       }

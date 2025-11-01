@@ -10,9 +10,11 @@ export const fetchCustomerTrend = async (params = {}) => {
   }
 };
 // Fetch bearing data for a given machineId and bearingId
-export const fetchBearingData = async (machineId, bearingId) => {
+// dataType should be "ONLINE" or "OFFLINE" based on machine type
+export const fetchBearingData = async (machineId, bearingId, dataType = "OFFLINE") => {
   try {
-    const res = await fetch(`http://localhost:8000/machines/data/${machineId}/${bearingId}`);
+    const url = `http://localhost:8000/machines/data/${machineId}/${bearingId}?data_type=${dataType}`;
+    const res = await fetch(url);
     if (!res.ok) return null;
     return await res.json();
   } catch {

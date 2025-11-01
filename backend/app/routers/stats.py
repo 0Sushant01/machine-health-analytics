@@ -1,6 +1,6 @@
 # File: app/routers/stats.py
 from fastapi import APIRouter, Query
-from app.db import db
+
 from datetime import datetime, timedelta
 from typing import List
 import itertools

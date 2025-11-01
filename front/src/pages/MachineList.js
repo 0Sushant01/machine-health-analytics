@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchMachines } from "../services/api";
 import "../App.css";
 import styles from "./MachineList.module.css";
@@ -19,16 +19,37 @@ const STATUS_COLORS = {
 
 const MachineList = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  // Helper function to format date as YYYY-MM-DD
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get default dates: today and 7 days ago
+  const getDefaultDates = () => {
+    const today = new Date();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    return {
+      from: formatDate(sevenDaysAgo),
+      to: formatDate(today)
+    };
+  };
+
   // Parse query params for initial filters
   const getInitialFilters = () => {
     const params = new URLSearchParams(location.search);
+    const defaultDates = getDefaultDates();
     return {
       areaId: "",
       subAreaId: params.get("subAreaId") || "",
       statusName: params.get("statusName") || "",
       customerId: params.get("customerId") || "",
-      date_from: params.get("date_from") || "2025-08-10",
-      date_to: params.get("date_to") || "2025-08-17"
+      date_from: params.get("date_from") || defaultDates.from,
+      date_to: params.get("date_to") || defaultDates.to
     };
   };
   const [machines, setMachines] = useState([]);
@@ -99,31 +120,30 @@ const MachineList = () => {
   const paginatedMachines = sortedMachines.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   return (
-      <div className={styles.machineListContainer} style={{ background: '#f9fafb', borderRadius: 12, boxShadow: '0 2px 8px #e5e7eb', padding: 32, margin: 24 }}>
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ textAlign: 'left', marginBottom: 12 }}>
-          <h2 className={styles.machineListTitle} style={{ fontSize: 28, fontWeight: 700, color: '#1e293b', letterSpacing: 1 }}>Machine List</h2>
-        </div>
-        <div style={{ background: '#fff', padding: 12, borderRadius: 10, boxShadow: '0 1px 6px rgba(15,23,42,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button onClick={() => window.location.href = '/'} className="navbar-link">Dashboard</button>
-              <button onClick={() => window.location.href = '/machines'} className="navbar-link" style={{ background: '#10b981', borderColor: '#10b981' }}>Machine List</button>
-            </div>
-            <div style={{ flex: 1 }} />
-            {/* header compact filters removed */}
+      <div className={styles.machineListContainer}>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ textAlign: 'left', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#6366f1' }}>
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <h2 className={styles.machineListTitle}>Machine List</h2>
           </div>
+          <p style={{ color: '#64748b', fontSize: '1rem', marginLeft: 44 }}>Browse and filter all machines in the system</p>
         </div>
       </div>
       {/* Filters */}
-      <div className={styles.filterBar} style={{ display: 'flex', gap: 24, flexWrap: 'wrap', marginBottom: 24, background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 1px 4px #e5e7eb' }}>
-        <div style={{ minWidth: 120 }}>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Area ID</label>
+      <div className={styles.filterBar}>
+        <div style={{ minWidth: 140 }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Area ID</label>
           <select
             name="areaId"
             value={filters.areaId}
             onChange={handleInputChange}
-            className={styles.filterSelect + ' border rounded px-2 py-1 bg-white'}
+            className={styles.filterSelect}
           >
             <option value="">All</option>
             {[...new Set(allMachines.map((m) => m.areaId).filter(Boolean))].map((id) => (
@@ -131,13 +151,13 @@ const MachineList = () => {
             ))}
           </select>
         </div>
-        <div style={{ minWidth: 120 }}>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Subarea ID</label>
+        <div style={{ minWidth: 140 }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Subarea ID</label>
           <select
             name="subAreaId"
             value={filters.subAreaId}
             onChange={handleInputChange}
-            className={styles.filterSelect + ' border rounded px-2 py-1 bg-white'}
+            className={styles.filterSelect}
           >
             <option value="">All</option>
             {[...new Set(allMachines.map((m) => m.subAreaId).filter(Boolean))].map((id) => (
@@ -145,26 +165,26 @@ const MachineList = () => {
             ))}
           </select>
         </div>
-        <div style={{ minWidth: 120 }}>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+        <div style={{ minWidth: 140 }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Status</label>
           <select
             name="statusName"
             value={filters.statusName}
             onChange={handleInputChange}
-            className={styles.filterSelect + ' border rounded px-2 py-1 bg-white'}
+            className={styles.filterSelect}
           >
             {statusOptions.map((s) => (
               <option key={s} value={s}>{s || "All"}</option>
             ))}
           </select>
         </div>
-        <div style={{ minWidth: 120 }}>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">Customer ID</label>
+        <div style={{ minWidth: 140 }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Customer ID</label>
           <select
             name="customerId"
             value={filters.customerId}
             onChange={handleInputChange}
-            className={styles.filterSelect + ' border rounded px-2 py-1 bg-white'}
+            className={styles.filterSelect}
           >
             <option value="">All</option>
             {[...new Set(allMachines.map((m) => m.customerId).filter(Boolean))].map((id) => (
@@ -172,31 +192,44 @@ const MachineList = () => {
             ))}
           </select>
         </div>
-        <div style={{ minWidth: 140 }}>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">From Date</label>
+        <div style={{ minWidth: 160 }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>From Date</label>
           <input
             type="date"
             name="date_from"
             value={filters.date_from}
             onChange={handleDateChange}
-            className={styles.filterInput + ' border rounded px-2 py-1 bg-white'}
+            className={styles.filterInput}
           />
         </div>
-        <div style={{ minWidth: 140 }}>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">To Date</label>
+        <div style={{ minWidth: 160 }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>To Date</label>
           <input
             type="date"
             name="date_to"
             value={filters.date_to}
             onChange={handleDateChange}
-            className={styles.filterInput + ' border rounded px-2 py-1 bg-white'}
+            className={styles.filterInput}
           />
         </div>
       </div>
       {loading ? (
-        <p style={{ color: '#6b7280' }}>Loading...</p>
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
+          <p style={{ color: '#64748b', marginTop: 16, fontSize: '1rem' }}>Loading machines...</p>
+        </div>
+      ) : machines.length === 0 ? (
+        <div className={styles.emptyState}>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#cbd5e1', marginBottom: 16 }}>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <h3 style={{ color: '#334155', marginBottom: 8 }}>No machines found</h3>
+          <p style={{ color: '#64748b' }}>Try adjusting your filters to see more results</p>
+        </div>
       ) : (
-        <div style={{ overflowX: 'auto', background: '#fff', borderRadius: 8, boxShadow: '0 1px 4px #e5e7eb', padding: 16 }}>
+        <div className={styles.tableWrapper}>
           <table className={styles.machineTable} style={{ width: '100%', borderCollapse: 'collapse', fontSize: 15 }}>
             <thead>
               <tr style={{ background: '#f1f5f9', color: '#334155', fontWeight: 600 }}>
@@ -204,6 +237,7 @@ const MachineList = () => {
                 <th style={{ padding: '10px 8px', borderBottom: '2px solid #e5e7eb' }}>Machine Name</th>
                 <th style={{ padding: '10px 8px', borderBottom: '2px solid #e5e7eb' }}>Machine ID</th>
                 <th style={{ padding: '10px 8px', borderBottom: '2px solid #e5e7eb' }}>Status</th>
+                <th style={{ padding: '10px 8px', borderBottom: '2px solid #e5e7eb' }}>Type</th>
                 <th style={{ padding: '10px 8px', borderBottom: '2px solid #e5e7eb' }}>Area ID</th>
                 <th style={{ padding: '10px 8px', borderBottom: '2px solid #e5e7eb' }}>Subarea ID</th>
                 <th style={{ padding: '10px 8px', borderBottom: '2px solid #e5e7eb' }}>Date</th>
@@ -214,7 +248,32 @@ const MachineList = () => {
                 <tr
                   key={m._id}
                   style={{ cursor: "pointer", background: idx % 2 === 0 ? '#f9fafb' : '#fff', transition: 'background 0.2s' }}
-                  onClick={() => window.location.href = `/machines/${m._id}`}
+                  onClick={() => {
+                    // Send only minimal required details for instant display
+                    // Bearings will be fetched from backend
+                    // Extract date properly - handle both full ISO string and date-only formats
+                    let dataUpdatedTime = "N/A";
+                    if (m.dataUpdatedTime) {
+                      // If it's already a date string, use it; otherwise format it
+                      if (typeof m.dataUpdatedTime === 'string' && m.dataUpdatedTime.includes('T')) {
+                        dataUpdatedTime = m.dataUpdatedTime;
+                      } else if (m.dataUpdatedTime) {
+                        dataUpdatedTime = m.dataUpdatedTime;
+                      }
+                    }
+                    
+                    const machineForDetail = {
+                      _id: m._id || "",
+                      name: m.name || m.machineName || "",
+                      customerId: m.customerId || "N/A",
+                      statusName: m.statusName || "N/A",
+                      areaId: m.areaId || "N/A",
+                      machineType: m.machineType || m.type || "N/A",
+                      type: m.machineType || m.type || "N/A",
+                      dataUpdatedTime: dataUpdatedTime
+                    };
+                    navigate(`/machines/${m._id}`, { state: { machine: machineForDetail } });
+                  }}
                   onMouseOver={e => e.currentTarget.style.background = '#e0e7ef'}
                   onMouseOut={e => e.currentTarget.style.background = idx % 2 === 0 ? '#f9fafb' : '#fff'}
                 >
@@ -229,6 +288,7 @@ const MachineList = () => {
                       {m.statusName}
                     </span>
                   </td>
+                  <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.machineType || m.type || "N/A"}</td>
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.areaId}</td>
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.subAreaId || "-"}</td>
                   <td style={{ padding: '8px 6px', borderBottom: '1px solid #e5e7eb' }}>{m.dataUpdatedTime ? m.dataUpdatedTime.split("T")[0] : ""}</td>
@@ -237,13 +297,29 @@ const MachineList = () => {
             </tbody>
           </table>
           {/* Pagination Controls */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '16px 0' }}>
-            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} style={{ marginRight: 8, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: page === 1 ? 'not-allowed' : 'pointer', opacity: page === 1 ? 0.6 : 1 }}>
+          <div className={styles.pagination}>
+            <button 
+              onClick={() => setPage(p => Math.max(1, p - 1))} 
+              disabled={page === 1} 
+              className={styles.paginationButton}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
               Previous
             </button>
-            <span style={{ fontWeight: 500, color: '#334155', margin: '0 12px' }}>Page {page} of {totalPages}</span>
-            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ marginLeft: 8, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500, cursor: page === totalPages ? 'not-allowed' : 'pointer', opacity: page === totalPages ? 0.6 : 1 }}>
+            <span className={styles.paginationInfo}>
+              Page <strong>{page}</strong> of <strong>{totalPages}</strong>
+            </span>
+            <button 
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+              disabled={page === totalPages} 
+              className={styles.paginationButton}
+            >
               Next
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </button>
           </div>
         </div>

@@ -12,8 +12,28 @@ import "./MainDashboard.css"; // custom styles
 
 Modal.setAppElement("#root");
 
+// Helper function to format date as YYYY-MM-DD
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Get default dates: today and 7 days ago
+const getDefaultDates = () => {
+  const today = new Date();
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(today.getDate() - 7);
+  return {
+    from: formatDate(sevenDaysAgo),
+    to: formatDate(today)
+  };
+};
+
 const MainDashboard = () => {
-  const [filters, setFilters] = useState({ date_from: "2025-08-10", date_to: "2025-08-17" });
+  const defaultDates = getDefaultDates();
+  const [filters, setFilters] = useState({ date_from: defaultDates.from, date_to: defaultDates.to });
   const [machines, setMachines] = useState([]);
   const [summary, setSummary] = useState({ totalMachines: 0, statuses: {} });
   const [stackedData, setStackedData] = useState({});
@@ -69,23 +89,55 @@ const MainDashboard = () => {
     <div className="dashboard-container">
       {/* Header */}
       <header className="dashboard-header">
-        <div style={{ width: '100%', maxWidth: 1120 }}>
-          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+        <div style={{ width: '100%', maxWidth: 1400 }}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
             <h1 className="dashboard-title">Factory Monitoring Dashboard</h1>
             <p className="dashboard-subtitle">Real-time monitoring of industrial machines</p>
           </div>
-          <div style={{ background: '#fff', padding: 16, borderRadius: 12, boxShadow: '0 1px 6px rgba(15,23,42,0.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button onClick={() => navigate('/')} className="navbar-link">Dashboard</button>
-                <button onClick={() => navigate('/machines')} className="navbar-link" style={{ background: '#10b981', borderColor: '#10b981' }}>Machine List</button>
-              </div>
-
-              <div style={{ flex: 1 }} />
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Filters setFilters={setFilters} compact={true} />
-              </div>
+          <div style={{ 
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)', 
+            backdropFilter: 'blur(12px)',
+            padding: '24px 28px', 
+            borderRadius: '20px', 
+            boxShadow: '0 8px 16px rgba(0,0,0,0.08), 0 4px 8px rgba(99, 102, 241, 0.1)',
+            border: '2px solid rgba(99, 102, 241, 0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Decorative background elements */}
+            <div style={{
+              position: 'absolute',
+              top: '-50%',
+              right: '-10%',
+              width: '200px',
+              height: '200px',
+              background: 'radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%)',
+              borderRadius: '50%'
+            }}></div>
+            <div style={{
+              position: 'absolute',
+              bottom: '-30%',
+              left: '-5%',
+              width: '150px',
+              height: '150px',
+              background: 'radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)',
+              borderRadius: '50%'
+            }}></div>
+            
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: 16,
+              position: 'relative',
+              zIndex: 1
+            }}>
+              <Filters 
+                setFilters={setFilters} 
+                compact={true} 
+                initialDateFrom={filters.date_from}
+                initialDateTo={filters.date_to}
+              />
             </div>
           </div>
         </div>
@@ -118,16 +170,38 @@ const MainDashboard = () => {
       {/* Charts Section */}
       <div className="charts-section">
         <div className="chart-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <h3 style={{ margin: 0 }}>Customer Trend</h3>
-            <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: '#1e293b' }}>Customer Trend</h3>
+            <div style={{ display: 'flex', gap: 6, background: '#f1f5f9', padding: 4, borderRadius: 8 }}>
               <button
                 onClick={() => setTrendView('stacked')}
-                style={{ padding: '6px 10px', borderRadius: 6, border: trendView === 'stacked' ? '1px solid #111827' : '1px solid #e5e7eb', background: trendView === 'stacked' ? '#111827' : '#fff', color: trendView === 'stacked' ? '#fff' : '#111827', cursor: 'pointer' }}
+                style={{ 
+                  padding: '8px 16px', 
+                  borderRadius: 6, 
+                  border: 'none',
+                  background: trendView === 'stacked' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'transparent',
+                  color: trendView === 'stacked' ? '#fff' : '#64748b',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  transition: 'all 0.2s ease',
+                  boxShadow: trendView === 'stacked' ? '0 2px 4px rgba(99, 102, 241, 0.3)' : 'none'
+                }}
               >Stacked</button>
               <button
                 onClick={() => setTrendView('line')}
-                style={{ padding: '6px 10px', borderRadius: 6, border: trendView === 'line' ? '1px solid #111827' : '1px solid #e5e7eb', background: trendView === 'line' ? '#111827' : '#fff', color: trendView === 'line' ? '#fff' : '#111827', cursor: 'pointer' }}
+                style={{ 
+                  padding: '8px 16px', 
+                  borderRadius: 6, 
+                  border: 'none',
+                  background: trendView === 'line' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'transparent',
+                  color: trendView === 'line' ? '#fff' : '#64748b',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  transition: 'all 0.2s ease',
+                  boxShadow: trendView === 'line' ? '0 2px 4px rgba(99, 102, 241, 0.3)' : 'none'
+                }}
               >Line</button>
             </div>
           </div>

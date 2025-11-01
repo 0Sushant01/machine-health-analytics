@@ -29,6 +29,7 @@ app.add_middleware(RequestLoggingMiddleware)
 origins = [
     "http://localhost",
     "http://localhost:3000",
+    "https://machine-health-analytics.vercel.app",
 ]
 
 app.add_middleware(

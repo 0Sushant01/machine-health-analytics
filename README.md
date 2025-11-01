@@ -37,8 +37,8 @@ machine-health-analytics/
    ```
 2. **Run the backend server:**
    ```powershell
-   cd app
-   uvicorn main:app --reload
+   cd backend
+   uvicorn app.main:app --reload
    ```
 3. **Insert test data (optional):**
    ```powershell

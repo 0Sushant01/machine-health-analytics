@@ -1,2 +1,2 @@
 // src/api/api.js
-export const BASE_URL = "http://127.0.0.1:8000"; // your FastAPI backend
+export const BASE_URL = "https://machine-health-analytics.onrender.com"; // your FastAPI backend

@@ -13,7 +13,7 @@ export const fetchCustomerTrend = async (params = {}) => {
 // dataType should be "ONLINE" or "OFFLINE" based on machine type
 export const fetchBearingData = async (machineId, bearingId, dataType = "OFFLINE") => {
   try {
-    const url = `http://localhost:8000/machines/data/${machineId}/${bearingId}?data_type=${dataType}`;
+    const url = `https://machine-health-analytics.onrender.com/machines/data/${machineId}/${bearingId}?data_type=${dataType}`;
     const res = await fetch(url);
     if (!res.ok) return null;
     return await res.json();
@@ -24,7 +24,7 @@ export const fetchBearingData = async (machineId, bearingId, dataType = "OFFLINE
 // Fetch a single machine with bearings and FFT data
 export const fetchMachineDetails = async (id) => {
   try {
-    const res = await fetch(`http://localhost:8000/machines/${id}`);
+    const res = await fetch(`https://machine-health-analytics.onrender.com/machines/${id}`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -34,7 +34,7 @@ export const fetchMachineDetails = async (id) => {
 export const fetchMachines = async (params) => {
   try {
     const query = new URLSearchParams(params).toString();
-    const res = await fetch(`http://localhost:8000/machines?${query}`);
+    const res = await fetch(`https://machine-health-analytics.onrender.com/machines?${query}`);
     if (!res.ok) return { machines: [] };
     return await res.json();
   } catch {

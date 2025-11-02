@@ -218,8 +218,85 @@ export const addMachinesFromTableRows = (rows = [], mapper = null) => {
   for (const row of rows) {
     try {
       const m = typeof mapper === "function" ? mapper(row) : row;
-      if (m) machines.push(m);
-    } catch { /* ignore bad rows */ }
+      if (m && typeof m === "object" && !Array.isArray(m)) machines.push(m);
+    } catch { /* ignore */ }
   }
   return updateMachinesCache(machines);
+};
+
+// --- Signal Analysis Constants & Thresholds ---
+export const SIGNAL_THRESHOLDS = {
+  CF: {
+    NORMAL: 3,    // CF < 3: Normal
+    WARNING: 4,    // 3 <= CF < 4: Caution
+    ALERT: 6      // CF >= 6: Critical
+  },
+  KURTOSIS: {
+    NORMAL: 3,    // K < 3: Normal
+    WARNING: 5,    // 3 <= K < 5: Caution
+    ALERT: 8      // K >= 8: Critical
+  }
+};
+
+// Calculate Root Mean Square (RMS)
+const _calculateRMS = (signal = []) => {
+  if (!Array.isArray(signal) || signal.length === 0) return 0;
+  const sumSquares = signal.reduce((acc, val) => acc + (val * val), 0);
+  return Math.sqrt(sumSquares / signal.length);
+};
+
+// Calculate Peak Value
+const _calculatePeak = (signal = []) => {
+  if (!Array.isArray(signal) || signal.length === 0) return 0;
+  return Math.max(...signal.map(Math.abs));
+};
+
+// Calculate Crest Factor (CF = Peak/RMS)
+export const calculateCF = (signal = []) => {
+  const rms = _calculateRMS(signal);
+  if (rms === 0) return 0;
+  return _calculatePeak(signal) / rms;
+};
+
+// Calculate Kurtosis
+export const calculateKurtosis = (signal = []) => {
+  if (!Array.isArray(signal) || signal.length === 0) return 0;
+  
+  const mean = signal.reduce((acc, val) => acc + val, 0) / signal.length;
+  const variance = signal.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / signal.length;
+  
+  if (variance === 0) return 0;
+  
+  const fourthMoment = signal.reduce((acc, val) => 
+    acc + Math.pow(val - mean, 4), 0) / signal.length;
+  
+  return fourthMoment / Math.pow(variance, 2);
+};
+
+// Get severity level based on metric value
+export const getSeverityLevel = (metric, value) => {
+  const thresholds = SIGNAL_THRESHOLDS[metric];
+  if (!thresholds) return 'UNKNOWN';
+  
+  if (value >= thresholds.ALERT) return 'CRITICAL';
+  if (value >= thresholds.WARNING) return 'WARNING';
+  if (value >= thresholds.NORMAL) return 'CAUTION';
+  return 'NORMAL';
+};
+
+// Get color for severity level
+export const getSeverityColor = (severity) => {
+  switch (severity) {
+    case 'CRITICAL': return '#dc2626'; // red-600
+    case 'WARNING': return '#d97706';  // amber-600
+    case 'CAUTION': return '#ca8a04';  // yellow-600
+    case 'NORMAL': return '#16a34a';   // green-600
+    default: return '#64748b';         // slate-500
+  }
+};
+
+// Format metric value for display
+export const formatMetricValue = (value) => {
+  if (typeof value !== 'number' || !isFinite(value)) return 'N/A';
+  return value.toFixed(3);
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { fetchMachines } from "../services/api";
+import { fetchMachines, updateMachinesCache, getFilterOptions, subscribeMachines } from "../services/api";
 import "../App.css";
 import styles from "./MachineList.module.css";
 
@@ -54,30 +54,23 @@ const MachineList = () => {
   };
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState(getInitialFilters);
-  const [allMachines, setAllMachines] = useState([]);
-  // const [error, setError] = useState(null);
+  const [filters, setFilters] = useState(getInitialFilters());
+  const [filterOptions, setFilterOptions] = useState({ areaId: [], customerId: [] });
 
-  // Fetch Machines
-  // Fetch all machines for dynamic filter options (customerId, areaId)
+  // Update subscriber to not fetch subAreaId
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const res = await fetchMachines({});
-        setAllMachines(res.machines || []);
-      } catch (e) {
-        setAllMachines([]);
-      }
-    };
-    fetchAll();
+    const unsubscribe = subscribeMachines(() => {
+      const opts = getFilterOptions(['areaId', 'customerId']);
+      setFilterOptions(opts);
+    });
+    return () => unsubscribe();
   }, []);
 
+  // Load machines with filters
   useEffect(() => {
     const loadMachines = async () => {
       setLoading(true);
       try {
-  // setError(null);
-        // Only send non-empty filters to backend
         const params = {};
         if (filters.areaId) params.areaId = filters.areaId;
         if (filters.subAreaId) params.subAreaId = filters.subAreaId;
@@ -85,10 +78,12 @@ const MachineList = () => {
         if (filters.customerId) params.customerId = filters.customerId;
         if (filters.date_from) params.date_from = filters.date_from;
         if (filters.date_to) params.date_to = filters.date_to;
+        
         const res = await fetchMachines(params);
-        setMachines(res.machines || []);
+        const loadedMachines = res.machines || [];
+        setMachines(loadedMachines);
+        updateMachinesCache(loadedMachines);
       } catch (error) {
-  // setError("Failed to fetch machines. Please try again later.");
         setMachines([]);
       } finally {
         setLoading(false);
@@ -137,80 +132,73 @@ const MachineList = () => {
       </div>
       {/* Filters */}
       <div className={styles.filterBar}>
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Area ID</label>
-          <select
-            name="areaId"
-            value={filters.areaId}
-            onChange={handleInputChange}
-            className={styles.filterSelect}
-          >
-            <option value="">All</option>
-            {[...new Set(allMachines.map((m) => m.areaId).filter(Boolean))].map((id) => (
-              <option key={id} value={id}>{id}</option>
-            ))}
-          </select>
+        <div className={styles.filterGroup}>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Area ID</label>
+            <select
+              name="areaId"
+              value={filters.areaId}
+              onChange={handleInputChange}
+              className={styles.filterSelect}
+            >
+              <option value="">All Areas</option>
+              {filterOptions.areaId?.map(id => (
+                <option key={id} value={id}>{id}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Status</label>
+            <select
+              name="statusName"
+              value={filters.statusName}
+              onChange={handleInputChange}
+              className={styles.filterSelect}
+            >
+              {statusOptions.map((s) => (
+                <option key={s} value={s}>{s || "All Statuses"}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>Customer ID</label>
+            <select
+              name="customerId"
+              value={filters.customerId}
+              onChange={handleInputChange}
+              className={styles.filterSelect}
+            >
+              <option value="">All Customers</option>
+              {filterOptions.customerId?.map(id => (
+                <option key={id} value={id}>{id}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Subarea ID</label>
-          <select
-            name="subAreaId"
-            value={filters.subAreaId}
-            onChange={handleInputChange}
-            className={styles.filterSelect}
-          >
-            <option value="">All</option>
-            {[...new Set(allMachines.map((m) => m.subAreaId).filter(Boolean))].map((id) => (
-              <option key={id} value={id}>{id}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Status</label>
-          <select
-            name="statusName"
-            value={filters.statusName}
-            onChange={handleInputChange}
-            className={styles.filterSelect}
-          >
-            {statusOptions.map((s) => (
-              <option key={s} value={s}>{s || "All"}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ minWidth: 140 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>Customer ID</label>
-          <select
-            name="customerId"
-            value={filters.customerId}
-            onChange={handleInputChange}
-            className={styles.filterSelect}
-          >
-            <option value="">All</option>
-            {[...new Set(allMachines.map((m) => m.customerId).filter(Boolean))].map((id) => (
-              <option key={id} value={id}>{id}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ minWidth: 160 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>From Date</label>
-          <input
-            type="date"
-            name="date_from"
-            value={filters.date_from}
-            onChange={handleDateChange}
-            className={styles.filterInput}
-          />
-        </div>
-        <div style={{ minWidth: 160 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>To Date</label>
-          <input
-            type="date"
-            name="date_to"
-            value={filters.date_to}
-            onChange={handleDateChange}
-            className={styles.filterInput}
-          />
+
+        <div className={styles.filterGroup}>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>From Date</label>
+            <input
+              type="date"
+              name="date_from"
+              value={filters.date_from}
+              onChange={handleDateChange}
+              className={styles.filterInput}
+            />
+          </div>
+          <div className={styles.filterItem}>
+            <label className={styles.filterLabel}>To Date</label>
+            <input
+              type="date"
+              name="date_to"
+              value={filters.date_to}
+              onChange={handleDateChange}
+              className={styles.filterInput}
+            />
+          </div>
         </div>
       </div>
       {loading ? (

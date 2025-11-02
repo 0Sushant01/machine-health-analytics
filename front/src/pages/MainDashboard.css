@@ -208,7 +208,7 @@
 .dashboard-title {
   font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  background: linear-gradient(135deg, #f1636f 0%, #5cf661 50%, #ec4899 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -218,7 +218,7 @@
 }
 
 .dashboard-subtitle {
-  color: #64748b;
+  color: #040e1c;
   margin-top: 0.25rem;
   font-size: 1.05rem;
   font-weight: 500;

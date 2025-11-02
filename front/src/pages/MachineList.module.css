@@ -255,3 +255,61 @@
   color: #1e293b;
   font-weight: 700;
 }
+
+/* Fullscreen loading overlay used during the initial first-page load */
+.fullscreenLoadingOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(15,23,42,0.45), rgba(99,102,241,0.18));
+  backdrop-filter: blur(4px) saturate(1.05);
+  z-index: 2000;
+  padding: 2rem;
+  pointer-events: auto;
+}
+
+.overlayBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255,255,255,0.95);
+  padding: 28px 36px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(14,30,37,0.18);
+  text-align: center;
+  min-width: 320px;
+  max-width: 90%;
+}
+
+/* reuse spinner but scale up for overlay */
+.overlayBox .spinner {
+  width: 56px;
+  height: 56px;
+  border-width: 5px;
+  border-top-color: #7c3aed;
+}
+
+.overlayMessage {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Subtext */
+.overlaySub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+/* When overlay is active, slightly dim the content underneath for graceful UX */
+.dimmedContent {
+  filter: blur(0.5px) saturate(0.95);
+  pointer-events: none; /* prevents accidental clicks */
+  user-select: none;
+  opacity: 0.98;
+}

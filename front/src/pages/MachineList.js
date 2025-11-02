@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { fetchMachines, updateMachinesCache, getFilterOptions, subscribeMachines } from "../services/api";
+import { fetchMachinesNoLoading, updateMachinesCache, getFilterOptions, subscribeMachines } from "../services/api";
 import "../App.css";
 import styles from "./MachineList.module.css";
 
@@ -52,6 +52,7 @@ const MachineList = () => {
       date_to: params.get("date_to") || defaultDates.to
     };
   };
+
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(getInitialFilters);
@@ -76,7 +77,6 @@ const MachineList = () => {
     const loadMachines = async () => {
       setLoading(true);
       try {
-        // setError(null);
         // Only send non-empty filters to backend
         const params = {};
         if (filters.areaId) params.areaId = filters.areaId;
@@ -85,13 +85,13 @@ const MachineList = () => {
         if (filters.customerId) params.customerId = filters.customerId;
         if (filters.date_from) params.date_from = filters.date_from;
         if (filters.date_to) params.date_to = filters.date_to;
-        const res = await fetchMachines(params);
+        // use non-loading fetch to avoid triggering global loader from this page
+        const res = await fetchMachinesNoLoading(params);
         const loaded = res.machines || [];
         setMachines(loaded);
         // push loaded table rows into cache so filters reflect currently shown data
         updateMachinesCache(loaded);
       } catch (error) {
-        // setError("Failed to fetch machines. Please try again later.");
         setMachines([]);
       } finally {
         setLoading(false);

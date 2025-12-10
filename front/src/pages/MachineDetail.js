@@ -147,7 +147,7 @@ const MachineDetail = () => {
 
       // Fetch data for each bearing and axis
       // Limit to first 2 bearings to avoid overwhelming requests if many bearings
-      const bearingsToProcess = bearings.slice(0, 2);
+      const bearingsToProcess = bearings;
 
       for (const bearing of bearingsToProcess) {
         for (const axis of ['V-Axis', 'H-Axis', 'A-Axis']) {

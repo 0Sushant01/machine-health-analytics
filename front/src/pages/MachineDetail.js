@@ -4,6 +4,10 @@ import { fetchMachineDetails, fetchBearingData } from "../services/api";
 import FFTChart from "../components/FFTChart";
 import TimeSeriesChart from "../components/TimeSeriesChart";
 import styles from "./MachineDetail.module.css";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas'; // turbo
+import MachineReport from '../components/MachineReport';
+import { useRef } from 'react';
 
 const STATUS_COLORS = {
   Normal: "#16a34a",
@@ -33,7 +37,7 @@ const IdDisplay = ({ value }) => {
       <div className={styles.idValue} title={value}>
         {value}
       </div>
-      <button 
+      <button
         onClick={copyToClipboard}
         className={styles.copyButton}
         title="Copy to clipboard"
@@ -58,6 +62,9 @@ const MachineDetail = () => {
   const location = useLocation();
   const initialMachine = location.state?.machine || null;
   const [machine, setMachine] = useState(initialMachine ? { ...initialMachine, bearings: [] } : null);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportData, setReportData] = useState({ measurements: [], observations: [], recommendations: [], fftData: [] });
+  const reportRef = useRef(null);
   const [loading, setLoading] = useState(false); // Don't show loading if we have initial data
   const [loadingBearings, setLoadingBearings] = useState(true); // Separate loading state for bearings
   const [error, setError] = useState(null);
@@ -71,11 +78,11 @@ const MachineDetail = () => {
       }
       setLoadingBearings(true);
       setError(null);
-      
+
       try {
         // Fetch full machine details and bearings from backend
         const res = await fetchMachineDetails(id);
-        
+
         // Check if response is valid
         if (!res) {
           setError("Failed to load machine data");
@@ -83,7 +90,7 @@ const MachineDetail = () => {
           setLoadingBearings(false);
           return;
         }
-        
+
         // Check if res.machine exists before accessing it
         if (!res.machine) {
           setError("Machine not found");
@@ -91,7 +98,7 @@ const MachineDetail = () => {
           setLoadingBearings(false);
           return;
         }
-        
+
         // Merge backend data with navigation state data
         // Priority: Keep ALL frontend (initialMachine) values, backend ONLY provides bearings
         // Don't overwrite frontend fields with backend "N/A" values
@@ -102,7 +109,7 @@ const MachineDetail = () => {
           bearings: res.machine.bearings || []
           // Explicitly do NOT spread res.machine to avoid overwriting with "N/A" values
         });
-        
+
       } catch (e) {
         setError("Failed to load machine data");
         // If we have initial machine data, keep showing it even on error
@@ -114,9 +121,111 @@ const MachineDetail = () => {
         setLoadingBearings(false);
       }
     };
-    
+
     load();
   }, [id, initialMachine]);
+
+  const calculateMetrics = (rawData) => {
+    if (!rawData || rawData.length === 0) return { velocity: 0, acceleration: 0 };
+    // Basic RMS calculation (assuming rawData is velocity or acceleration waveforms)
+    // In reality, this depends on what the raw data represents. Assuming standard waveform.
+    const sumSquares = rawData.reduce((acc, val) => acc + val * val, 0);
+    const rms = Math.sqrt(sumSquares / rawData.length);
+    const peak = Math.max(...rawData.map(Math.abs));
+    return { velocity: rms.toFixed(3), acceleration: (peak / 9.81).toFixed(3) }; // Very rough approximation
+  };
+
+  const generateReport = async () => {
+    if (!reportRef.current) return;
+    setIsGeneratingReport(true);
+
+    try {
+      const allMeasurements = [];
+      const allFFTData = [];
+      const bearings = machine.bearings || [];
+      const currentDate = new Date().toLocaleDateString();
+
+      // Fetch data for each bearing and axis
+      // Limit to first 2 bearings to avoid overwhelming requests if many bearings
+      const bearingsToProcess = bearings.slice(0, 2);
+
+      for (const bearing of bearingsToProcess) {
+        for (const axis of ['V-Axis', 'H-Axis', 'A-Axis']) {
+          const axisCode = axis.charAt(0);
+          try {
+            const res = await fetchBearingData(id, bearing._id, "OFFLINE", axis);
+            const rawData = (res && res.data && res.data.rawData) ? res.data.rawData : [];
+            const sr = (res && res.data && res.data.SR) ? parseFloat(res.data.SR) : 20000;
+
+            if (rawData.length > 0) {
+              const metrics = calculateMetrics(rawData);
+              allMeasurements.push({
+                pointName: `${bearing._id} (${bearing.bearingType || 'Bearing'})`,
+                date: currentDate,
+                axis: axisCode,
+                velocity: metrics.velocity,
+                acceleration: metrics.acceleration,
+                envelope: '0.00', // Envelope data not usually in raw waveform
+                temp: 'N/A'
+              });
+
+              allFFTData.push({
+                title: `${bearing._id} – ${axisCode} Axis`,
+                rawData: rawData,
+                sr: sr
+              });
+            }
+          } catch (e) {
+            console.warn(`Failed to fetch report data for ${bearing._id} ${axis}`, e);
+          }
+        }
+      }
+
+      // Update report data state
+      setReportData({
+        measurements: allMeasurements.length > 0 ? allMeasurements : [],
+        observations: ["Vibration levels analyzed from latest data.", "FFT charts generated for available axes."],
+        recommendations: ["Review critical axes.", "Monitor trends."],
+        fftData: allFFTData
+      });
+
+      // Wait for React to render the report with new data
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      pdf.save(`Vibration_Report_${machine?.name || 'Machine'}.pdf`);
+    } catch (err) {
+      console.error("Report generation failed:", err);
+      alert("Failed to generate report");
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
 
   // Show loading only if we don't have initial machine data
   if (loading && !machine) return <div className={styles.loading}>Loading...</div>;
@@ -125,17 +234,57 @@ const MachineDetail = () => {
 
   return (
     <div className={styles.detailContainer}>
+      {/* Hidden Report Container */}
+      <div style={{ position: 'absolute', top: -10000, left: -10000 }}>
+        {machine && (
+          <MachineReport
+            ref={reportRef}
+            machine={machine}
+            measurements={reportData.measurements}
+            observations={reportData.observations}
+            recommendations={reportData.recommendations}
+            fftData={reportData.fftData}
+          />
+        )}
+      </div>
+
       <div className={styles.headerSection}>
-        <div>
-          <h2 className={styles.title}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 12, verticalAlign: 'middle', color: '#6366f1' }}>
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <line x1="9" y1="3" x2="9" y2="21" />
-            </svg>
-            {machine.name || machine._id}
-          </h2>
-          <p className={styles.subtitle}>Detailed machine information and bearing data</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 className={styles.title}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 12, verticalAlign: 'middle', color: '#6366f1' }}>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+              </svg>
+              {machine.name}
+            </h2>
+          </div>
+          <button
+            onClick={generateReport}
+            disabled={isGeneratingReport}
+            className={styles.showChartsButton}
+            style={{ background: '#10b981', boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)', opacity: isGeneratingReport ? 0.7 : 1 }}
+          >
+            {isGeneratingReport ? (
+              <>
+                <div className={styles.buttonSpinner} style={{ marginRight: 8 }}></div>
+                Generating...
+              </>
+            ) : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '8px' }}>
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Generate Report
+              </>
+            )}
+          </button>
         </div>
+        <p className={styles.subtitle}>Detailed machine information and bearing data</p>
       </div>
       <div className={styles.infoSection}>
         <div className={styles.infoCard}>
@@ -237,8 +386,8 @@ const MachineDetail = () => {
           Bearings
         </h3>
       </div>
-      <div style={{overflowX: 'auto'}}>
-        <table className={styles.machineTable} style={{width: '100%', marginBottom: 24}}>
+      <div style={{ overflowX: 'auto' }}>
+        <table className={styles.machineTable} style={{ width: '100%', marginBottom: 24 }}>
           <thead>
             <tr>
               <th>Bearing ID</th>
@@ -248,12 +397,12 @@ const MachineDetail = () => {
           </thead>
           <tbody>
             {loadingBearings ? (
-              <tr><td colSpan={3} style={{textAlign: 'center', padding: '20px'}}>Loading bearings...</td></tr>
+              <tr><td colSpan={3} style={{ textAlign: 'center', padding: '20px' }}>Loading bearings...</td></tr>
             ) : machine.bearings && machine.bearings.length > 0 ? (
               machine.bearings.map((bearing, idx) => (
-                <BearingRowWithFFT 
-                  key={bearing._id || idx} 
-                  bearing={bearing} 
+                <BearingRowWithFFT
+                  key={bearing._id || idx}
+                  bearing={bearing}
                   machineType={machine.machineType || machine.type || "OFFLINE"}
                 />
               ))
@@ -263,51 +412,72 @@ const MachineDetail = () => {
           </tbody>
         </table>
       </div>
-    </div>
+    </div >
   );
 };
 
 
-function BearingRowWithFFT({ bearing, machineType = "OFFLINE" }) {
-  const [rawData, setRawData] = useState(null);
-  const [sr, setSr] = useState(null);
-  const [timeSeriesData, setTimeSeriesData] = useState(null);
+const BearingRowWithFFT = ({ bearing, machineType = "OFFLINE" }) => {
+  const [axisData, setAxisData] = useState({
+    "V-Axis": { rawData: null, sr: null, timeSeriesData: null, error: null },
+    "H-Axis": { rawData: null, sr: null, timeSeriesData: null, error: null },
+    "A-Axis": { rawData: null, sr: null, timeSeriesData: null, error: null },
+  });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [showCharts, setShowCharts] = useState(false);
+  const [activeAxis, setActiveAxis] = useState("V-Axis"); // Default active tab
   const { id: machineId } = useParams();
 
   const loadData = async () => {
     setLoading(true);
-    setError(null);
+    // Reset errors
+    setAxisData(prev => ({
+      "V-Axis": { ...prev["V-Axis"], error: null },
+      "H-Axis": { ...prev["H-Axis"], error: null },
+      "A-Axis": { ...prev["A-Axis"], error: null },
+    }));
+
     try {
-      // Determine data type from machine type (ONLINE or OFFLINE)
-      // Default to "OFFLINE" if not specified or if machineType is not exactly "ONLINE"
       const dataType = (machineType && machineType.toUpperCase() === "ONLINE") ? "ONLINE" : "OFFLINE";
-      
-      const res = await fetchBearingData(machineId, bearing._id, dataType);
-      console.log("Bearing data response:", res, "Data Type:", dataType);
-      // Use backend response format: res.data.rawData, res.data.SR
-      const rowdata = (res && res.data && res.data.rawData) ? res.data.rawData : 
-                      (res && res.data && res.data.rowdata) ? res.data.rowdata : [];
-      setRawData(rowdata);
-      setSr((res && res.data && res.data.SR) ? parseFloat(res.data.SR) : 20000);
-      // Time series data: [{x: sampleIndex, y: amplitude}]
-      const tsData = rowdata.length > 0 ? rowdata.map((y, x) => ({ x, y })) : [];
-      setTimeSeriesData(tsData);
+      const axes = ["V-Axis", "H-Axis", "A-Axis"];
+
+      // Fetch all axes in parallel
+      const results = await Promise.all(axes.map(async (axis) => {
+        try {
+          const res = await fetchBearingData(machineId, bearing._id, dataType, axis);
+          const rowdata = (res && res.data && res.data.rawData) ? res.data.rawData :
+            (res && res.data && res.data.rowdata) ? res.data.rowdata : [];
+          const sr = (res && res.data && res.data.SR) ? parseFloat(res.data.SR) : 20000;
+          const tsData = rowdata.length > 0 ? rowdata.map((y, x) => ({ x, y })) : [];
+
+          return { axis, rawData: rowdata, sr, timeSeriesData: tsData, error: (!rowdata || rowdata.length === 0) ? "No data available" : null };
+        } catch (e) {
+          return { axis, rawData: [], sr: 20000, timeSeriesData: [], error: "Failed to load data" };
+        }
+      }));
+
+      // Update state with results
+      const newData = {};
+      results.forEach(r => {
+        newData[r.axis] = {
+          rawData: r.rawData,
+          sr: r.sr,
+          timeSeriesData: r.timeSeriesData,
+          error: r.error
+        };
+      });
+
+      setAxisData(newData);
       setShowCharts(true);
-      
-      // Show error if no data found
-      if (!rowdata || rowdata.length === 0) {
-        setError("No data available for this bearing");
-      }
+
     } catch (e) {
       console.error("Error loading bearing data:", e);
-      setError("Failed to load bearing data");
     } finally {
       setLoading(false);
     }
   };
+
+  const currentAxisState = axisData[activeAxis];
 
   return (
     <React.Fragment>
@@ -315,9 +485,9 @@ function BearingRowWithFFT({ bearing, machineType = "OFFLINE" }) {
         <td>{bearing._id}</td>
         <td>{bearing.statusName}</td>
         <td>
-          <button 
-            onClick={loadData} 
-            disabled={loading} 
+          <button
+            onClick={loadData}
+            disabled={loading}
             className={styles.showChartsButton}
           >
             {loading ? (
@@ -336,22 +506,49 @@ function BearingRowWithFFT({ bearing, machineType = "OFFLINE" }) {
               </>
             )}
           </button>
-          {error && <div className={styles.errorMessage}>{error}</div>}
         </td>
       </tr>
       {showCharts && (
         <tr>
-          <td colSpan={3}>
-            <div style={{marginBottom: 16}}>
-              <TimeSeriesChart data={timeSeriesData} />
+          <td colSpan={3} style={{ padding: 0 }}>
+            <div className={styles.tabsContainer}>
+
+              {/* Axis Tabs */}
+              <div className={styles.tabsList}>
+                {["V-Axis", "H-Axis", "A-Axis"].map(axis => (
+                  <button
+                    key={axis}
+                    onClick={() => setActiveAxis(axis)}
+                    className={`${styles.tabButton} ${activeAxis === axis ? styles.tabButtonActive : ''}`}
+                  >
+                    {axis === "V-Axis" ? "Vertical" : axis === "H-Axis" ? "Horizontal" : "Axial"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Chart Content */}
+              {currentAxisState.error ? (
+                <div className={styles.errorMessage} style={{ margin: 0 }}>{currentAxisState.error}</div>
+              ) : (
+                <div className="space-y-6">
+                  <div className={styles.chartSection}>
+                    <h4 className={styles.chartTitle}>Time Series - {activeAxis === "V-Axis" ? "Vertical" : activeAxis === "H-Axis" ? "Horizontal" : "Axial"}</h4>
+                    <TimeSeriesChart data={currentAxisState.timeSeriesData} />
+                  </div>
+                  <div>
+                    <h4 className={styles.chartTitle}>Frequency Spectrum - {activeAxis === "V-Axis" ? "Vertical" : activeAxis === "H-Axis" ? "Horizontal" : "Axial"}</h4>
+                    <FFTChart rawData={currentAxisState.rawData} sr={currentAxisState.sr} />
+                  </div>
+                </div>
+              )}
+
             </div>
-            <FFTChart rawData={rawData} sr={sr} />
           </td>
         </tr>
       )}
     </React.Fragment>
   );
-}
+};
 
 
 export default MachineDetail;

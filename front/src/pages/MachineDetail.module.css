@@ -2,8 +2,8 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   padding: 3rem;
   margin: 2rem auto;
   max-width: 1200px;
@@ -49,8 +49,8 @@
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   border-radius: 1rem;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05), 0 4px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
@@ -59,7 +59,7 @@
 
 .infoCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
 }
 
 .infoIcon {
@@ -85,7 +85,8 @@
 
 .infoContent {
   flex: 1;
-  min-width: 0; /* Allow text to wrap */
+  min-width: 0;
+  /* Allow text to wrap */
 }
 
 .infoValue {
@@ -159,16 +160,17 @@
   color: #fff;
   font-weight: 700;
   font-size: 0.85rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .machineTable {
   width: 100%;
   border-collapse: collapse;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
 }
 
@@ -265,4 +267,47 @@
   background: rgba(239, 68, 68, 0.1);
   border-radius: 0.75rem;
   border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Tabs */
+.tabsContainer {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.tabsList {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.tabButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tabButtonActive {
+  background: #6366f1;
+  color: #ffffff;
+}
+
+.chartSection {
+  margin-bottom: 24px;
+}
+
+.chartTitle {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: #334155;
+  font-weight: 700;
 }

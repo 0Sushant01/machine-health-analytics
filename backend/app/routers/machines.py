@@ -114,7 +114,7 @@ class MachineDetailRequest(BaseModel):
 
 class BearingDataRequest(BaseModel):
     date: Optional[str] = None
-    axis: Optional[str] = "V-Axis"
+    axis: Optional[str] = "V-Axis"  # Supports: V-Axis, H-Axis, A-Axis
     data_type: Optional[str] = "OFFLINE"
     analytics_type: Optional[str] = "MF"
 
@@ -407,7 +407,7 @@ async def get_machine_bearing_data(
     bearing_id: str,
     request_body: Optional[BearingDataRequest] = None,
     date: Optional[str] = Query(None),
-    axis: Optional[str] = Query("V-Axis"),
+    axis: Optional[str] = Query("V-Axis", description="V-Axis, H-Axis, or A-Axis"),
     data_type: Optional[str] = Query("OFFLINE"),
     analytics_type: Optional[str] = Query("MF")
 ):

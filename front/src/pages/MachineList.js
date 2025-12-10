@@ -28,34 +28,37 @@ const MachineList = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // Get default dates: today and 7 days ago
-  const getDefaultDates = () => {
+  // Get today's date
+  const getTodayDate = () => {
     const today = new Date();
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(today.getDate() - 7);
-    return {
-      from: formatDate(sevenDaysAgo),
-      to: formatDate(today)
-    };
+    return formatDate(today);
   };
 
   // Parse query params for initial filters
   const getInitialFilters = () => {
     const params = new URLSearchParams(location.search);
-    const defaultDates = getDefaultDates();
+    const today = getTodayDate();
     return {
       areaId: "",
       subAreaId: params.get("subAreaId") || "",
       statusName: params.get("statusName") || "",
       customerId: params.get("customerId") || "",
-      date_from: params.get("date_from") || defaultDates.from,
-      date_to: params.get("date_to") || defaultDates.to
+      date_from: params.get("date_from") || today,
+      date_to: params.get("date_to") || today
     };
   };
 
   const [machines, setMachines] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState(getInitialFilters);
+  const todayDate = getTodayDate();
+  const [filters] = useState({
+    areaId: "",
+    subAreaId: "",
+    statusName: "",
+    customerId: "",
+    date_from: todayDate,
+    date_to: todayDate
+  });
   // dynamic filter options derived from the currently loaded table data (cache)
   const [filterOptions, setFilterOptions] = useState({ areaId: [], customerId: [] });
   // const [error, setError] = useState(null);
@@ -77,14 +80,7 @@ const MachineList = () => {
     const loadMachines = async () => {
       setLoading(true);
       try {
-        // Only send non-empty filters to backend
-        const params = {};
-        if (filters.areaId) params.areaId = filters.areaId;
-        if (filters.subAreaId) params.subAreaId = filters.subAreaId;
-        if (filters.statusName) params.status = filters.statusName;
-        if (filters.customerId) params.customerId = filters.customerId;
-        if (filters.date_from) params.date_from = filters.date_from;
-        if (filters.date_to) params.date_to = filters.date_to;
+        const params = { date_from: todayDate, date_to: todayDate };
         // use non-loading fetch to avoid triggering global loader from this page
         const res = await fetchMachinesNoLoading(params);
         const loaded = res.machines || [];
@@ -98,17 +94,7 @@ const MachineList = () => {
       }
     };
     loadMachines();
-  }, [filters]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleDateChange = (e) => {
-    const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
+  }, [todayDate]);
 
   // Pagination state (ensure defined)
   const [page, setPage] = useState(1);
@@ -155,84 +141,7 @@ const MachineList = () => {
               </svg>
               <h2 className={styles.machineListTitle}>Machine List</h2>
             </div>
-            <p style={{ color: '#64748b', fontSize: '1rem', marginLeft: 44 }}>Browse and filter all machines in the system</p>
-          </div>
-        </div>
-        {/* Filters */}
-        <div className={styles.filterBar}>
-          <div style={{ minWidth: 140 }}>
-            <label className={styles.filterLabel}>Area ID</label>
-            <select
-              name="areaId"
-              value={filters.areaId}
-              onChange={handleInputChange}
-              className={styles.filterSelect}
-              disabled={initialLoad}  // prevent interaction during initial load
-              aria-busy={initialLoad}
-            >
-              <option value="">All</option>
-              {(filterOptions.areaId || []).map((id) => (
-                <option key={id} value={id}>{id}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ minWidth: 140 }}>
-            <label className={styles.filterLabel}>Status</label>
-            <select
-              name="statusName"
-              value={filters.statusName}
-              onChange={handleInputChange}
-              className={styles.filterSelect}
-              disabled={initialLoad}
-              aria-busy={initialLoad}
-            >
-              {statusOptions.map((s) => (
-                <option key={s} value={s}>{s || "All"}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ minWidth: 140 }}>
-            <label className={styles.filterLabel}>Customer ID</label>
-            <select
-              name="customerId"
-              value={filters.customerId}
-              onChange={handleInputChange}
-              className={styles.filterSelect}
-              disabled={initialLoad}
-              aria-busy={initialLoad}
-            >
-              <option value="">All</option>
-              {(filterOptions.customerId || []).map((id) => (
-                <option key={id} value={id}>{id}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ minWidth: 160 }}>
-            <label className={styles.filterLabel}>From Date</label>
-            <input
-              type="date"
-              name="date_from"
-              value={filters.date_from}
-              onChange={handleDateChange}
-              className={styles.filterInput}
-              disabled={initialLoad}
-              aria-busy={initialLoad}
-            />
-          </div>
-          <div style={{ minWidth: 160 }}>
-            <label className={styles.filterLabel}>To Date</label>
-            <input
-              type="date"
-              name="date_to"
-              value={filters.date_to}
-              onChange={handleDateChange}
-              className={styles.filterInput}
-              disabled={initialLoad}
-              aria-busy={initialLoad}
-            />
+            <p style={{ color: '#64748b', fontSize: '1rem', marginLeft: 44 }}>Today's machines status</p>
           </div>
         </div>
         {loading ? (

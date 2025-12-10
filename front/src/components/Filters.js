@@ -8,22 +8,17 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// Get default dates: today and 7 days ago
-const getDefaultDates = () => {
+// Get today's date only
+const getTodayDate = () => {
   const today = new Date();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(today.getDate() - 7);
-  return {
-    from: formatDate(sevenDaysAgo),
-    to: formatDate(today)
-  };
+  return formatDate(today);
 };
 
 // compact: when true, render inline compact controls suitable for header rows
 const Filters = ({ setFilters, compact = false, initialDateFrom = null, initialDateTo = null }) => {
-  const defaultDates = getDefaultDates();
-  const [dateFrom, setDateFrom] = useState(initialDateFrom || defaultDates.from);
-  const [dateTo, setDateTo] = useState(initialDateTo || defaultDates.to);
+  const todayDate = getTodayDate();
+  const [dateFrom, setDateFrom] = useState(initialDateFrom || todayDate);
+  const [dateTo, setDateTo] = useState(initialDateTo || todayDate);
   const isInitialMount = useRef(true);
 
   // Sync with parent if initial dates are provided, and apply on mount
@@ -36,10 +31,10 @@ const Filters = ({ setFilters, compact = false, initialDateFrom = null, initialD
         setDateTo(initialDateTo);
         setFilters({ date_from: initialDateFrom, date_to: initialDateTo });
       } else {
-        const dates = getDefaultDates();
-        setDateFrom(dates.from);
-        setDateTo(dates.to);
-        setFilters({ date_from: dates.from, date_to: dates.to });
+        const today = getTodayDate();
+        setDateFrom(today);
+        setDateTo(today);
+        setFilters({ date_from: today, date_to: today });
       }
     } else {
       // On subsequent updates, sync with parent if dates are provided

@@ -1,4 +1,4 @@
-const BASE_URL = "https://machine-health-analytics.onrender.com";
+const BASE_URL = "http://127.0.0.1:8000";
 
 // --- Simple loading emitter for global loader
 const _loadingSubscribers = new Set();
@@ -15,7 +15,7 @@ const _notifyLoading = (isLoading) => {
 export const subscribeLoading = (cb) => {
   if (typeof cb !== "function") throw new Error("callback must be a function");
   _loadingSubscribers.add(cb);
-  try { cb(_loadingCount > 0); } catch {}
+  try { cb(_loadingCount > 0); } catch { }
   return () => _loadingSubscribers.delete(cb);
 };
 
@@ -74,10 +74,10 @@ export const fetchCustomerTrend = async (params = {}) => {
   }
 };
 
-export const fetchBearingData = async (machineId, bearingId, dataType = "OFFLINE") => {
+export const fetchBearingData = async (machineId, bearingId, dataType = "OFFLINE", axis = "V-Axis") => {
   _startLoading();
   try {
-    const url = `${BASE_URL}/machines/data/${machineId}/${bearingId}?data_type=${dataType}`;
+    const url = `${BASE_URL}/machines/data/${machineId}/${bearingId}?data_type=${dataType}&axis=${axis}`;
     const res = await fetch(url);
     if (!res.ok) return null;
     return await res.json();
@@ -187,7 +187,7 @@ export const clearMachinesCache = () => {
 export const subscribeMachines = (callback) => {
   if (typeof callback !== "function") throw new Error("callback must be a function");
   _subscribers.add(callback);
-  try { callback(_machinesCache.slice()); } catch {}
+  try { callback(_machinesCache.slice()); } catch { }
   return () => { _subscribers.delete(callback); };
 };
 
@@ -261,15 +261,15 @@ export const calculateCF = (signal = []) => {
 // Calculate Kurtosis
 export const calculateKurtosis = (signal = []) => {
   if (!Array.isArray(signal) || signal.length === 0) return 0;
-  
+
   const mean = signal.reduce((acc, val) => acc + val, 0) / signal.length;
   const variance = signal.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / signal.length;
-  
+
   if (variance === 0) return 0;
-  
-  const fourthMoment = signal.reduce((acc, val) => 
+
+  const fourthMoment = signal.reduce((acc, val) =>
     acc + Math.pow(val - mean, 4), 0) / signal.length;
-  
+
   return fourthMoment / Math.pow(variance, 2);
 };
 
@@ -277,7 +277,7 @@ export const calculateKurtosis = (signal = []) => {
 export const getSeverityLevel = (metric, value) => {
   const thresholds = SIGNAL_THRESHOLDS[metric];
   if (!thresholds) return 'UNKNOWN';
-  
+
   if (value >= thresholds.ALERT) return 'CRITICAL';
   if (value >= thresholds.WARNING) return 'WARNING';
   if (value >= thresholds.NORMAL) return 'CAUTION';

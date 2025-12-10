@@ -146,8 +146,8 @@ const MachineDetail = () => {
       const currentDate = new Date().toLocaleDateString();
 
       // Fetch data for each bearing and axis
-      // Limit to first 2 bearings to avoid overwhelming requests if many bearings
-      const bearingsToProcess = bearings.slice(0, 2);
+      // We process ALL bearings now for the full report
+      const bearingsToProcess = bearings;
 
       for (const bearing of bearingsToProcess) {
         for (const axis of ['V-Axis', 'H-Axis', 'A-Axis']) {
@@ -190,32 +190,35 @@ const MachineDetail = () => {
       });
 
       // Wait for React to render the report with new data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Give it slightly more time for charts to render
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false
-      });
-
-      const imgData = canvas.toDataURL('image/png');
+      // NEW PDF GENERATION LOGIC: Page-based
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pages = reportRef.current.querySelectorAll('.report-page');
 
-      let heightLeft = imgHeight;
-      let position = 0;
+      if (pages.length === 0) {
+        throw new Error("No report pages found to generate");
+      }
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+        // Use a higher scale for better quality, but balancing file size
+        const canvas = await html2canvas(page, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: 794, // Approx A4 width in px at 96dpi (210mm)
+          windowHeight: 1123 // Approx A4 height
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 0.9); // JPEG for smaller size
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = 297; // A4 height in mm
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
       }
 
       pdf.save(`Vibration_Report_${machine?.name || 'Machine'}.pdf`);

@@ -19,6 +19,44 @@ const getTodayDate = () => {
   return formatDate(today);
 };
 
+// Status icons as SVG components
+const StatusIcons = {
+  total: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+    </svg>
+  ),
+  Normal: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  ),
+  Satisfactory: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  Alert: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  Unacceptable: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="15" y1="9" x2="9" y2="15" />
+      <line x1="9" y1="9" x2="15" y2="15" />
+    </svg>
+  )
+};
+
 const MainDashboard = () => {
   const todayDate = getTodayDate();
   const [filters] = useState({ date_from: todayDate, date_to: todayDate });
@@ -44,35 +82,50 @@ const MainDashboard = () => {
     setSummary({ totalMachines: machines.length, statuses: statusCount });
   }, [machines]);
 
+  // Status accent colors matching CSS
+  const getAccentColor = (status) => {
+    const colors = {
+      Normal: '#10b981',
+      Satisfactory: '#3b82f6',
+      Alert: '#f59e0b',
+      Unacceptable: '#ef4444'
+    };
+    return colors[status] || '#0891b2';
+  };
+
   return (
     <div className="dashboard-container">
-      {/* Header */}
-      <header className="dashboard-header">
-        <div style={{ width: '100%', maxWidth: 1400 }}>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <h1 className="dashboard-title">Factory Monitoring Dashboard</h1>
-            <p className="dashboard-subtitle">Real-time monitoring of industrial machines</p>
-          </div>
-        </div>
-      </header>
-
-      {/* Summary Section */}
+      {/* Summary Section - Now at the top */}
       <div className="summary-section">
-        <div className="total-card" style={{ '--accent-color': '#ffffff' }}>
-          <h2 className="total-card-title" style={{ fontWeight: 800 }}>Total Machines</h2>
+        {/* Total Machines Card */}
+        <div
+          className="total-card"
+          data-status="total"
+          style={{ '--accent-color': '#0891b2', '--accent-color-light': '#06b6d4' }}
+        >
+          <div className="total-card-icon" style={{ background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)' }}>
+            {StatusIcons.total}
+          </div>
+          <h2 className="total-card-title">Total Machines</h2>
           <p className="total-card-value">{summary.totalMachines}</p>
         </div>
+
+        {/* Status Cards */}
         {Object.keys(summary.statuses).map((status) => {
-          const accent = status === 'Normal' ? '#22c55e' :
-            status === 'Satisfactory' ? '#3b82f6' :
-              status === 'Alert' ? '#facc15' :
-                status === 'Unacceptable' ? '#ef4444' : '#e5e7eb';
+          const accent = getAccentColor(status);
           return (
             <div
               key={status}
               className="total-card"
+              data-status={status.toLowerCase()}
               style={{ '--accent-color': accent }}
             >
+              <div
+                className="total-card-icon"
+                style={{ background: accent }}
+              >
+                {StatusIcons[status]}
+              </div>
               <h2 className="total-card-title">{status}</h2>
               <p className="total-card-value">{summary.statuses[status]}</p>
             </div>

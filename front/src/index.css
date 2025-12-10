@@ -4,13 +4,14 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #1e293b;
   line-height: 1.6;
+  background: #f8fafc;
 }
 
 code {
@@ -19,24 +20,29 @@ code {
 }
 
 /* Modern Input Styles */
-input, select, textarea {
+input,
+select,
+textarea {
   font-family: inherit;
   font-size: 0.95rem;
   padding: 0.65rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 10px;
   border: 1.5px solid #e2e8f0;
   background: white;
   color: #1e293b;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
   outline: none;
 }
 
-input:focus, select:focus, textarea:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #0891b2;
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.12);
 }
 
-input:hover, select:hover {
+input:hover,
+select:hover {
   border-color: #cbd5e1;
 }
 
@@ -45,29 +51,28 @@ button {
   font-family: inherit;
   cursor: pointer;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 10px;
   font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
   position: relative;
   overflow: hidden;
 }
 
 button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 button:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
 button:not(:disabled):active {
   transform: translateY(0);
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling - Light Theme */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -75,15 +80,17 @@ button:not(:disabled):active {
 
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
   border-radius: 5px;
 }
 
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #94a3b8 0%, #cbd5e1 100%);
+  border-radius: 5px;
+  border: 2px solid #f1f5f9;
+}
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%);
 }
 
 /* Smooth Scrolling */
@@ -99,9 +106,12 @@ html {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -112,6 +122,19 @@ html {
     opacity: 0;
     transform: translateY(10px);
   }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -120,4 +143,14 @@ html {
 
 .fade-in {
   animation: fadeIn 0.4s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease-out;
+}
+
+/* Selection highlight */
+::selection {
+  background: rgba(8, 145, 178, 0.2);
+  color: #0f172a;
 }

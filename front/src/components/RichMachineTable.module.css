@@ -1,7 +1,6 @@
-/* RichMachineTable.module.css */
+/* RichMachineTable.module.css - Modern Light Theme */
 
 .tableContainer {
-  /* Container checks or just local scoping */
   width: 100%;
 }
 
@@ -9,10 +8,13 @@
   overflow-x: auto;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
-  padding: 1.5rem;
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 0;
 }
 
 .machineTable {
@@ -27,30 +29,39 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   padding: 1rem 1.25rem;
   text-align: left;
   border-bottom: 2px solid #e2e8f0;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+.machineTable th:first-child {
+  border-top-left-radius: 16px;
+}
+
+.machineTable th:last-child {
+  border-top-right-radius: 16px;
 }
 
 .machineTable td {
   padding: 1rem 1.25rem;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #334155;
-  border-bottom: 1px solid #e2e8f0;
-  transition: background 0.2s ease;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .machineTable tbody tr {
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .machineTable tbody tr:hover {
-  background: #f8fafc;
-  transform: scale(1.001);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  background: linear-gradient(90deg, rgba(8, 145, 178, 0.04) 0%, rgba(13, 148, 136, 0.04) 100%);
 }
 
 .machineTable tbody tr:nth-child(even) {
@@ -58,41 +69,48 @@
 }
 
 .machineTable tbody tr:nth-child(even):hover {
-  background: #f1f5f9;
+  background: linear-gradient(90deg, rgba(8, 145, 178, 0.06) 0%, rgba(13, 148, 136, 0.06) 100%);
 }
 
 .machineNameCell {
   font-weight: 600;
-  color: #2563eb;
-  background: rgba(219,234,254,0.4);
-  border-radius: 0.25rem;
-  padding: 4px 8px; /* Slightly adjusted for reuse */
+  color: #0891b2;
+  background: rgba(8, 145, 178, 0.08);
+  border-radius: 6px;
+  padding: 4px 10px;
+  transition: all 0.2s ease;
+}
+
+.machineNameCell:hover {
+  background: rgba(8, 145, 178, 0.12);
 }
 
 .statusCell {
   font-weight: 600;
   color: inherit;
   background: transparent;
-  border-radius: 0.25rem;
   text-align: center;
 }
 
 .statusBadge {
   display: inline-block;
-  padding: 0.4rem 0.85rem;
-  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
   color: #fff;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   line-height: 1;
-  min-width: 7rem;
+  min-width: 90px;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .statusBadge:hover {
   transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .pagination {
@@ -100,46 +118,50 @@
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  padding: 1.25rem;
+  border-top: 1px solid #f1f5f9;
+  background: rgba(248, 250, 252, 0.5);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .paginationButton {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0.65rem 1.25rem;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  padding: 0.6rem 1.1rem;
+  background: linear-gradient(135deg, #0891b2 0%, #0d9488 100%);
   color: #fff;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
 }
 
 .paginationButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 14px rgba(8, 145, 178, 0.4);
 }
 
 .paginationButton:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
+  background: #94a3b8;
+  box-shadow: none;
 }
 
 .paginationInfo {
   font-weight: 500;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .paginationInfo strong {
-  color: #1e293b;
+  color: #0f172a;
   font-weight: 700;
 }
 
@@ -151,6 +173,24 @@
   padding: 4rem 2rem;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.emptyState svg {
+  color: #cbd5e1;
+  margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+  color: #334155;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.emptyState p {
+  color: #64748b;
 }

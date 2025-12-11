@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainDashboard from "./pages/MainDashboard";
 import MachineList from "./pages/MachineList";
 import MachineDetail from "./pages/MachineDetail";

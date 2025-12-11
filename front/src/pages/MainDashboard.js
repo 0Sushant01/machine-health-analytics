@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom"; // unused
 import RichMachineTable from "../components/RichMachineTable";
-import { fetchMachines } from "../services/api";
+import Filters from "../components/Filters";
+import { fetchMachines, updateMachinesCache, getFilterOptions, subscribeMachines } from "../services/api";
 import "../App.css";
 import "./MainDashboard.css"; // custom styles
 
@@ -18,6 +19,15 @@ const getTodayDate = () => {
   const today = new Date();
   return formatDate(today);
 };
+
+// ... StatusIcons ... -> I'll keep them but I need to use StartLine/EndLine carefully to avoid replacing them or duplicating.
+// Actually, to keep it simple, I will replace the top imports, and then the Component body.
+
+// I'll do this in chunks because StatusIcons is large.
+// Chunk 1: Imports
+
+
+
 
 // Status icons as SVG components
 const StatusIcons = {
@@ -59,14 +69,37 @@ const StatusIcons = {
 
 const MainDashboard = () => {
   const todayDate = getTodayDate();
-  const [filters] = useState({ date_from: todayDate, date_to: todayDate });
+  const [filters, setFilters] = useState({
+    date_from: todayDate,
+    date_to: todayDate,
+    customerId: "",
+    areaId: "",
+    statusName: ""
+  });
   const [machines, setMachines] = useState([]);
   const [summary, setSummary] = useState({ totalMachines: 0, statuses: {} });
+  const [filterOptions, setFilterOptions] = useState({ areaId: [], customerId: [] });
+
+  // subscribe to cache updates so filters update when table data is updated
+  useEffect(() => {
+    const unsub = subscribeMachines(() => {
+      const opts = getFilterOptions(['areaId', 'customerId']);
+      setFilterOptions({
+        areaId: opts.areaId || [],
+        customerId: opts.customerId || [],
+      });
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
-      const res = await fetchMachines({ ...filters });
-      setMachines(res.machines || []);
+      // Clean filters
+      const params = { ...filters };
+      const res = await fetchMachines(params);
+      const loaded = res.machines || [];
+      setMachines(loaded);
+      updateMachinesCache(loaded);
     };
     loadData();
   }, [filters]);
@@ -133,8 +166,14 @@ const MainDashboard = () => {
         })}
       </div>
 
-      {/* Machine Table */}
+      {/* Filters & Machine Table */}
       <div style={{ marginTop: '2rem' }}>
+        <Filters
+          setFilters={setFilters}
+          initialFilters={filters}
+          filterOptions={filterOptions}
+          compact={false}
+        />
         <RichMachineTable machines={machines} />
       </div>
     </div>

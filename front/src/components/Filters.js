@@ -15,266 +15,159 @@ const getTodayDate = () => {
 };
 
 // compact: when true, render inline compact controls suitable for header rows
-const Filters = ({ setFilters, compact = false, initialDateFrom = null, initialDateTo = null }) => {
+const Filters = ({ setFilters, compact = false, initialDateFrom = null, initialDateTo = null, filterOptions = {}, initialFilters = {} }) => {
   const todayDate = getTodayDate();
   const [dateFrom, setDateFrom] = useState(initialDateFrom || todayDate);
   const [dateTo, setDateTo] = useState(initialDateTo || todayDate);
+  const [customerId, setCustomerId] = useState(initialFilters.customerId || "");
+  const [statusName, setStatusName] = useState(initialFilters.statusName || "");
+  const [areaId, setAreaId] = useState(initialFilters.areaId || "");
+
   const isInitialMount = useRef(true);
 
-  // Sync with parent if initial dates are provided, and apply on mount
+  // Sync with parent if initial dates/filters are provided
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      // On initial mount, apply dates
+      // On initial mount, apply provided values or defaults
+      setDateFrom(initialDateFrom || initialFilters.date_from || todayDate);
+      setDateTo(initialDateTo || initialFilters.date_to || todayDate);
+      setCustomerId(initialFilters.customerId || "");
+      setStatusName(initialFilters.statusName || "");
+      setAreaId(initialFilters.areaId || "");
+
+      // If specifically passed initial dates separate from initialFilters object (legacy support)
       if (initialDateFrom && initialDateTo) {
-        setDateFrom(initialDateFrom);
-        setDateTo(initialDateTo);
-        setFilters({ date_from: initialDateFrom, date_to: initialDateTo });
-      } else {
-        const today = getTodayDate();
-        setDateFrom(today);
-        setDateTo(today);
-        setFilters({ date_from: today, date_to: today });
+        // already set above
+      } else if (!initialFilters.date_from) {
+        // triggering default set if nothing passed
+        setFilters(prev => ({ ...prev, date_from: todayDate, date_to: todayDate }));
       }
     } else {
-      // On subsequent updates, sync with parent if dates are provided
-      if (initialDateFrom && initialDateTo) {
-        setDateFrom(initialDateFrom);
-        setDateTo(initialDateTo);
-      }
+      // Subsequent updates looking at props? 
+      // Usually Filters component drives the state, but if parent updates constraints we might need to react.
+      // For now, let's trust internal state unless fully controlled.
     }
-  }, [initialDateFrom, initialDateTo, setFilters]);
+  }, [initialDateFrom, initialDateTo, initialFilters, setFilters, todayDate]);
 
   const applyFilter = () => {
-    setFilters({ date_from: dateFrom, date_to: dateTo });
+    setFilters({
+      date_from: dateFrom,
+      date_to: dateTo,
+      customerId,
+      statusName,
+      areaId
+    });
   };
 
   const rootClass = compact ? "filters-compact" : "filters-full";
 
+  const selectStyle = {
+    background: '#ffffff',
+    cursor: 'pointer',
+    fontWeight: 500,
+    color: '#1e293b',
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '14px',
+    minWidth: '120px',
+    outline: 'none'
+  };
+
   return (
     <div className={rootClass} style={{
-      background: compact ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
-      padding: compact ? '0' : '16px',
-      borderRadius: compact ? '0' : '16px',
-      boxShadow: compact ? 'none' : '0 2px 8px rgba(0,0,0,0.05)',
-      border: compact ? 'none' : '1px solid rgba(0,0,0,0.06)'
+      background: compact ? 'transparent' : '#ffffff',
+      padding: compact ? '0' : '20px',
+      borderRadius: compact ? '0' : '12px',
+      boxShadow: compact ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      border: compact ? 'none' : '1px solid #e2e8f0',
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '16px',
+      alignItems: 'end',
+      position: 'relative',
+      zIndex: 20,
+      width: '100%',
+      marginBottom: '20px'
     }}>
-      <div className={compact ? "filters-field" : "filter-field-full"} style={{ position: 'relative' }}>
-        <label className={compact ? "filters-label" : "filter-label-full"}>
-          {compact ? (
-            <span style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px',
-              color: '#6366f1',
-              fontWeight: 600
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ 
-                filter: 'drop-shadow(0 1px 2px rgba(99, 102, 241, 0.3))'
-              }}>
-                <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
-                <line x1="16" y1="2" x2="16" y2="6" strokeLinecap="round" />
-                <line x1="8" y1="2" x2="8" y2="6" strokeLinecap="round" />
-                <line x1="3" y1="10" x2="21" y2="10" strokeLinecap="round" />
-                <circle cx="8" cy="15" r="1" fill="currentColor" />
-                <circle cx="12" cy="15" r="1" fill="currentColor" />
-                <circle cx="16" cy="15" r="1" fill="currentColor" />
-              </svg>
-              <span>From</span>
-            </span>
-          ) : (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              From Date
-            </span>
-          )}
-        </label>
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          {/* Calendar Icon */}
-          <svg 
-            width="18" 
-            height="18" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="#6366f1" 
-            strokeWidth="2"
-            style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              zIndex: 1,
-              opacity: 0.7
-            }}
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          <input 
-            type="date" 
-            value={dateFrom} 
-            onChange={(e) => setDateFrom(e.target.value)} 
-            className={compact ? "filters-input-date" : "filter-input-full"}
-            style={{
-              background: '#ffffff',
-              cursor: 'pointer',
-              fontWeight: 500,
-              color: '#1e293b',
-              paddingLeft: '2.5rem'
-            }}
-          />
-          {compact && (
-            <svg 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="#94a3b8" 
-              strokeWidth="2"
-              style={{
-                position: 'absolute',
-                right: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none',
-                opacity: 0.6
-              }}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          )}
-        </div>
-      </div>
-      
-      {/* Arrow Icon Between Dates */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        paddingBottom: compact ? '0' : '24px',
-        margin: compact ? '0 -4px' : '0 4px'
-      }}>
-        <svg 
-          width="20" 
-          height="20" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="#6366f1" 
-          strokeWidth="3"
-          style={{
-            filter: 'drop-shadow(0 2px 4px rgba(99, 102, 241, 0.3))',
-            opacity: 0.8
-          }}
+      {/* Customer ID Filter */}
+      <div className={compact ? "filters-field" : "filter-field-full"} style={{ display: 'flex', flexDirection: 'column', flex: '1 1 200px' }}>
+        <label className={compact ? "filters-label" : "filter-label-full"} style={{ marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Customer ID</label>
+        <select
+          value={customerId}
+          onChange={(e) => setCustomerId(e.target.value)}
+          style={selectStyle}
         >
-          <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+          <option value="">All Customers</option>
+          {filterOptions.customerId && filterOptions.customerId.map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
 
-      <div className={compact ? "filters-field" : "filter-field-full"} style={{ position: 'relative' }}>
-        <label className={compact ? "filters-label" : "filter-label-full"}>
-          {compact ? (
-            <span style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px',
-              color: '#6366f1',
-              fontWeight: 600
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ 
-                filter: 'drop-shadow(0 1px 2px rgba(99, 102, 241, 0.3))'
-              }}>
-                <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
-                <line x1="16" y1="2" x2="16" y2="6" strokeLinecap="round" />
-                <line x1="8" y1="2" x2="8" y2="6" strokeLinecap="round" />
-                <line x1="3" y1="10" x2="21" y2="10" strokeLinecap="round" />
-                <path d="M8 14h8M8 18h5" strokeLinecap="round" />
-              </svg>
-              <span>To</span>
-            </span>
-          ) : (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              To Date
-            </span>
-          )}
-        </label>
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          {/* Calendar Icon */}
-          <svg 
-            width="18" 
-            height="18" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="#6366f1" 
-            strokeWidth="2"
-            style={{
-              position: 'absolute',
-              left: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              zIndex: 1,
-              opacity: 0.7
-            }}
-          >
+      {/* Area ID Filter */}
+      <div className={compact ? "filters-field" : "filter-field-full"} style={{ display: 'flex', flexDirection: 'column', flex: '1 1 200px' }}>
+        <label className={compact ? "filters-label" : "filter-label-full"} style={{ marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Area ID</label>
+        <select
+          value={areaId}
+          onChange={(e) => setAreaId(e.target.value)}
+          style={selectStyle}
+        >
+          <option value="">All Areas</option>
+          {filterOptions.areaId && filterOptions.areaId.map(a => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Status Filter */}
+      <div className={compact ? "filters-field" : "filter-field-full"} style={{ display: 'flex', flexDirection: 'column', flex: '1 1 200px' }}>
+        <label className={compact ? "filters-label" : "filter-label-full"} style={{ marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Status</label>
+        <select
+          value={statusName}
+          onChange={(e) => setStatusName(e.target.value)}
+          style={selectStyle}
+        >
+          <option value="">All Statuses</option>
+          {["Normal", "Satisfactory", "Alert", "Unacceptable"].map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Current Date Display */}
+      <div className={compact ? "filters-field" : "filter-field-full"} style={{ display: 'flex', flexDirection: 'column', flex: '1 1 200px' }}>
+        <label className={compact ? "filters-label" : "filter-label-full"} style={{ marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#475569' }}>Date</label>
+        <div style={{
+          background: '#f1f5f9',
+          padding: '8px 16px',
+          borderRadius: '6px',
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#475569',
+          border: '1px solid #e2e8f0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          height: '38px' // Match visually with select inputs
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
             <line x1="16" y1="2" x2="16" y2="6" />
             <line x1="8" y1="2" x2="8" y2="6" />
             <line x1="3" y1="10" x2="21" y2="10" />
           </svg>
-          <input 
-            type="date" 
-            value={dateTo} 
-            onChange={(e) => setDateTo(e.target.value)} 
-            className={compact ? "filters-input-date" : "filter-input-full"}
-            style={{
-              background: '#ffffff',
-              cursor: 'pointer',
-              fontWeight: 500,
-              color: '#1e293b',
-              paddingLeft: '2.5rem'
-            }}
-          />
-          {compact && (
-            <svg 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="#94a3b8" 
-              strokeWidth="2"
-              style={{
-                position: 'absolute',
-                right: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                pointerEvents: 'none',
-                opacity: 0.6
-              }}
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          )}
+          {todayDate}
         </div>
       </div>
-      <button 
-        onClick={applyFilter} 
+
+      <button
+        onClick={applyFilter}
         className={compact ? "filters-apply-btn" : "filter-apply-btn-full"}
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        style={{
+          display: 'flex',
+          alignItems: 'center',
           gap: '8px',
           justifyContent: 'center',
           position: 'relative',
@@ -294,7 +187,7 @@ const Filters = ({ setFilters, compact = false, initialDateFrom = null, initialD
         </svg>
         <span style={{ fontWeight: 600, letterSpacing: '0.3px' }}>Apply Filter</span>
       </button>
-    </div>
+    </div >
   );
 };
 

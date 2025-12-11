@@ -300,3 +300,83 @@ export const formatMetricValue = (value) => {
   if (typeof value !== 'number' || !isFinite(value)) return 'N/A';
   return value.toFixed(3);
 };
+
+// Helper to calculate Report Metrics (matches MachineDetail.js logic)
+const _calculateReportMetrics = (rawData) => {
+  if (!rawData || rawData.length === 0) return { velocity: 0, acceleration: 0 };
+  const sumSquares = rawData.reduce((acc, val) => acc + val * val, 0);
+  const rms = Math.sqrt(sumSquares / rawData.length);
+  const peak = Math.max(...rawData.map(Math.abs));
+  // Matches MachineDetail.js: Acceleration = Peak / 9.81
+  return { velocity: rms.toFixed(3), acceleration: (peak / 9.81).toFixed(3) };
+};
+
+// Fetch ALL data required for a single machine report (Details + Bearings + Signals)
+export const fetchFullMachineReportData = async (machineId, overrideData = {}) => {
+  try {
+    // 1. Fetch Machine Details
+    const res = await fetchMachineDetails(machineId);
+    if (!res || !res.machine) return null;
+    const machine = res.machine;
+    // Ensure name is present for Header component using override if backend misses it
+    machine.name = machine.name || machine.machineName || overrideData.name || overrideData.machineName || machine._id || "Unknown Machine";
+
+    const allMeasurements = [];
+    const allFFTData = [];
+    const bearings = machine.bearings || [];
+
+    const currentDate = new Date().toLocaleDateString();
+
+    // 2. Iterate Bearings & Axes
+    for (const bearing of bearings) {
+      for (const axis of ['V-Axis', 'H-Axis', 'A-Axis']) {
+        const axisCode = axis.charAt(0);
+        try {
+          // 3. Fetch Signal Data
+          // Note: using offline data as per MachineDetail logic
+          const signalRes = await fetchBearingData(machineId, bearing._id, "OFFLINE", axis);
+          const rawData = (signalRes && signalRes.data && signalRes.data.rawData) ? signalRes.data.rawData : [];
+          const sr = (signalRes && signalRes.data && signalRes.data.SR) ? parseFloat(signalRes.data.SR) : 20000;
+
+          if (rawData.length > 0) {
+            // Calculate metrics only if we have data
+            const metrics = _calculateReportMetrics(rawData);
+
+            allMeasurements.push({
+              pointName: `${bearing._id} (${bearing.bearingType || 'Bearing'})`,
+              date: currentDate,
+              axis: axisCode,
+              velocity: metrics.velocity,
+              acceleration: metrics.acceleration,
+              envelope: '0.00', // Placeholder as per current logic
+              temp: 'N/A'
+            });
+
+            allFFTData.push({
+              title: `${bearing._id} – ${axisCode} Axis`,
+              rawData: rawData,
+              sr: sr,
+              pointName: bearing._id,
+              axis: axisCode,
+              description: `${bearing._id} - ${axisCode} Axis`
+            });
+          }
+        } catch (e) {
+          console.warn(`Failed to fetch report data for ${machineId} ${bearing._id} ${axis}`, e);
+        }
+      }
+    }
+
+    return {
+      machine: machine,
+      measurements: allMeasurements,
+      fftData: allFFTData,
+      observations: ["Vibration levels analyzed from latest data.", "FFT charts generated for available axes."],
+      recommendations: ["Review critical axes.", "Monitor trends."]
+    };
+
+  } catch (error) {
+    console.error("Error generating full machine report data:", error);
+    return null;
+  }
+};

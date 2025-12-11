@@ -25,7 +25,8 @@ const Header = ({ machine, reportDate }) => (
         <div style={{ textAlign: 'center', flex: 1 }}>
             <h2 style={{ fontSize: '18px', margin: 0, textTransform: 'uppercase' }}>{machine?.name || 'MACHINE REPORT'}</h2>
         </div>
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/52/JSW_Group_logo.svg/1200px-JSW_Group_logo.svg.png" alt="JSW" style={{ height: '30px' }} />
+        {/* Placeholder for JSW Logo to avoid 404/CORS issues */}
+        <div style={{ padding: '5px', border: '1px dashed #ccc', color: '#666', fontSize: '10px' }}>[JSW Logo]</div>
     </div>
 );
 
@@ -55,214 +56,148 @@ const Page = forwardRef(({ children, machine, reportDate, pageNum, totalPages },
     </div>
 ));
 
-const SeverityMatrix = () => {
-    // Styles
-    const containerStyle = { marginTop: '20px', flex: 1, fontFamily: 'Arial, sans-serif' };
+export const SeverityMatrix = () => {
     const tableStyle = {
         width: '100%',
         borderCollapse: 'collapse',
-        fontSize: '9px',
-        border: '3px solid #000',
-        textAlign: 'center'
-    };
-    const cellStyle = { border: '1px solid #000', padding: '1px' };
-    const headerCellStyle = { ...cellStyle, fontWeight: 'bold', backgroundColor: '#fff' };
-    const valueCellStyle = { ...cellStyle, fontWeight: 'bold', backgroundColor: '#fff', width: '25px', height: '15px' };
-    const verticalTdStyle = {
-        ...cellStyle,
-        verticalAlign: 'middle',
+        fontSize: '8px',
+        border: '2px solid #000',
         textAlign: 'center',
-        width: '30px',
-        padding: 0
+        fontFamily: 'Arial, sans-serif'
     };
+    const cellStyle = { border: '1px solid #000', padding: '0px', height: '14px' };
+    const boldCellStyle = { ...cellStyle, fontWeight: 'bold' };
 
     // Colors
-    const RED = '#ff0000';
-    const YEL = '#ffff00';
-    const GRN = '#339933';
-    const BLU = '#0000ff';
+    const R = '#ff0000';
+    const Y = '#ffff00';
+    const G = '#339933'; // Slightly darker green matching image
+    const B = '#0000ff';
+    const W = '#ffffff'; // White for empty top right
 
-    // Helper for color cell - Now always single cell to enforce borders
-    const ColorCell = ({ color }) => (
-        <td style={{ backgroundColor: color, border: '1px solid #000', height: '15px', width: '6%' }}></td>
+    // Grid Rows (Top to Bottom) - Visual extraction from screenshot
+    // Columns: [G4R, G4F, G3R, G3F, G2R, G2F, G1R, G1F]
+    // Values: 11, 7.1, 4.5, 3.5, 2.8, 2.3, 1.4, 0.71
+    const gridRows = [
+        { colors: [R, R, R, R, R, R, R, R], valMm: '11', valIn: '0.44' },     // > 11
+        { colors: [R, R, R, R, R, R, R, R], valMm: '7.1', valIn: '0.28' },    // 7.1 - 11
+        { colors: [R, R, R, R, R, R, Y, Y], valMm: '4.5', valIn: '0.18' },    // 4.5 - 7.1
+        { colors: [R, R, Y, Y, Y, Y, Y, Y], valMm: '3.5', valIn: '0.11' },    // 3.5 - 4.5
+        { colors: [Y, Y, G, G, G, G, Y, Y], valMm: '2.8', valIn: '0.07' },    // 2.8 - 3.5
+        { colors: [Y, Y, G, G, G, G, G, G], valMm: '2.3', valIn: '0.04' },    // 2.3 - 2.8
+        { colors: [G, G, G, G, G, G, G, G], valMm: '1.4', valIn: '0.03' },    // 1.4 - 2.3
+        { colors: [G, G, B, B, B, B, B, B], valMm: '0.71', valIn: '0.02' },   // 0.71 - 1.4
+        { colors: [B, B, B, B, B, B, B, B], valMm: 'mm/s', valIn: 'in/s' },   // < 0.71 (Bottom Blue)
+    ];
+
+    const LegendItem = ({ letter, text, color }) => (
+        <div style={{ display: 'flex', border: '1px solid #000', borderBottom: text === 'Vibration causes damage' ? '1px solid #000' : 'none', fontSize: '9px', lineHeight: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '15px', backgroundColor: color, color: 'white', fontWeight: 'bold', textAlign: 'center', borderRight: '1px solid #000' }}>{letter}</div>
+            <div style={{ padding: '0 5px', backgroundColor: '#fff', flex: 1 }}>{text}</div>
+        </div>
     );
 
-    // Group columns helper
-    // 8 columns: 0,1=Grp4; 2,3=Grp3; 4,5=Grp2; 6,7=Grp1
-    const renderRowCells = (colors) => {
-        // colors is array of 4 colors [Grp4, Grp3, Grp2, Grp1].
-        // We render 2 cells for each color.
-        return (
-            <>
-                <ColorCell color={colors[0]} /><ColorCell color={colors[0]} />
-                <ColorCell color={colors[1]} /><ColorCell color={colors[1]} />
-                <ColorCell color={colors[2]} /><ColorCell color={colors[2]} />
-                <ColorCell color={colors[3]} /><ColorCell color={colors[3]} />
-            </>
-        );
-    };
-
     return (
-        <div style={containerStyle}>
-            <h3 style={{ borderBottom: '2px solid #ddd', paddingBottom: '5px', marginBottom: '10px' }}>VIBRATION ANALYSIS REPORT</h3>
-
-            {/* Legend */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '5px', fontSize: '9px', border: '2px solid #000', display: 'inline-block', float: 'right' }}>
-                <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
-                    <div style={{ background: BLU, width: 15, height: 12, borderRight: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>A</div>
-                    <div style={{ padding: '0 5px' }}>Newly Commissioned</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
-                    <div style={{ background: GRN, width: 15, height: 12, borderRight: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>B</div>
-                    <div style={{ padding: '0 5px' }}>Unrestricted long-term operation</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #000' }}>
-                    <div style={{ background: YEL, width: 15, height: 12, borderRight: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>C</div>
-                    <div style={{ padding: '0 5px' }}>Restricted long-term operation</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ background: RED, width: 15, height: 12, borderRight: '1px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>D</div>
-                    <div style={{ padding: '0 5px' }}>Vibration causes damage</div>
+        <div style={{ marginTop: '10px', width: '100%', fontFamily: 'Arial, sans-serif' }}>
+            {/* Legend Section (Right Aligned) */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '5px' }}>
+                <div style={{ width: '250px', borderBottom: '1px solid #000' }}>
+                    <LegendItem letter="A" color={B} text="Newly Commissioned" />
+                    <LegendItem letter="B" color={G} text="Unrestricted long-term operation" />
+                    <LegendItem letter="C" color={Y} text="Restricted long-term operation" />
+                    <LegendItem letter="D" color={R} text="Vibration causes damage" />
                 </div>
             </div>
-            <div style={{ clear: 'both' }}></div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', fontWeight: 'bold', marginBottom: '2px' }}>
+            {/* Header Title */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '11px', marginBottom: '2px' }}>
                 <span>Velocity Threshold Values</span>
                 <span>ISO 10816-3</span>
             </div>
 
+            {/* Main Table */}
             <table style={tableStyle}>
-                <colgroup>
-                    <col style={{ width: '6%' }} /> {/* Group 4 */}
-                    <col style={{ width: '6%' }} /> {/* Group 4 */}
-                    <col style={{ width: '6%' }} /> {/* Group 3 */}
-                    <col style={{ width: '6%' }} /> {/* Group 3 */}
-                    <col style={{ width: '6%' }} /> {/* Group 2 */}
-                    <col style={{ width: '6%' }} /> {/* Group 2 */}
-                    <col style={{ width: '6%' }} /> {/* Group 1 */}
-                    <col style={{ width: '6%' }} /> {/* Group 1 */}
-                    <col style={{ width: '8%' }} /> {/* mms */}
-                    <col style={{ width: '8%' }} /> {/* inch */}
-                    <col style={{ width: '5%' }} /> {/* label */}
-                </colgroup>
+                <tbody>
+                    {/* Color Grid + Values + Side Header */}
+                    {gridRows.map((row, idx) => (
+                        <tr key={idx} style={{ height: '16px' }}>
+                            {/* Color Cells */}
+                            {row.colors.map((c, cIdx) => (
+                                <td key={cIdx} style={{ ...cellStyle, backgroundColor: c, width: '6.5%' }}></td>
+                            ))}
 
-                {/* Red Zone Top - 3 Rows (>11 spacing) */}
-                {[...Array(3)].map((_, i) => (
-                    <tr key={`top-${i}`}>
-                        {renderRowCells([RED, RED, RED, RED])}
-                        <td style={{ ...valueCellStyle, border: 'none', borderLeft: '1px solid #000' }}></td>
-                        <td style={{ ...valueCellStyle, border: 'none', borderRight: '1px solid #000' }}></td>
-                        {i === 0 && (
-                            <td rowSpan={11} style={verticalTdStyle}>
-                                <div style={{ transform: 'rotate(-90deg)', whiteSpace: 'nowrap', fontWeight: 'bold', fontSize: '18px', fontFamily: 'sans-serif', display: 'inline-block' }}>Velocity</div>
-                            </td>
-                        )}
+                            {/* Values */}
+                            <td style={{ ...boldCellStyle, width: '8%', backgroundColor: '#fff' }}>{row.valMm}</td>
+                            <td style={{ ...boldCellStyle, width: '8%', backgroundColor: '#fff' }}>{row.valIn}</td>
+
+                            {/* Velocity Vertical Header (RowSpan) */}
+                            {idx === 0 && (
+                                <td rowSpan={9} style={{
+                                    border: '2px solid #000',
+                                    verticalAlign: 'middle',
+                                    textAlign: 'center',
+                                    width: '8%',
+                                    backgroundColor: '#fff',
+                                }}>
+                                    <div style={{
+                                        transform: 'rotate(-90deg)',
+                                        whiteSpace: 'nowrap',
+                                        fontWeight: 'bold',
+                                        fontSize: '14px',
+                                        width: '10px',
+                                        margin: '0 auto',
+                                        height: '100px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>Velocity</div>
+                                </td>
+                            )}
+                        </tr>
+                    ))}
+
+                    {/* Footer Hierarchy */}
+                    {/* Row 1: Rigid/Flexible */}
+                    <tr>
+                        <td style={boldCellStyle}>Rigid</td><td style={boldCellStyle}>Flexible</td>
+                        <td style={boldCellStyle}>Rigid</td><td style={boldCellStyle}>Flexible</td>
+                        <td style={boldCellStyle}>Rigid</td><td style={boldCellStyle}>Flexible</td>
+                        <td style={boldCellStyle}>Rigid</td><td style={boldCellStyle}>Flexible</td>
+                        <td colSpan={3} style={boldCellStyle}>Foundation</td>
                     </tr>
-                ))}
 
-                {/* 11.0 Line */}
-                <tr>
-                    {renderRowCells([RED, RED, RED, RED])}
-                    <td style={valueCellStyle}>11</td><td style={valueCellStyle}>0.44</td>
-                </tr>
+                    {/* Row 2: Machine Types (Pumps etc) */}
+                    <tr>
+                        <td colSpan={4} style={boldCellStyle}>Pumps &gt; 15 kW</td>
+                        <td colSpan={2} style={boldCellStyle}>Medium sized Machines</td>
+                        <td colSpan={2} style={boldCellStyle}>Large Machines</td>
+                        <td rowSpan={3} colSpan={3} style={{ ...boldCellStyle, verticalAlign: 'middle' }}>Machine Type</td>
+                    </tr>
 
-                {/* 7.1 Line */}
-                <tr>
-                    {/* Grp 4,3,2 Red. Grp 1 Yellow. */}
-                    {renderRowCells([RED, RED, RED, YEL])}
-                    <td style={valueCellStyle}>7.1</td><td style={valueCellStyle}>0.28</td>
-                </tr>
+                    {/* Row 3: Details */}
+                    <tr>
+                        <td colSpan={4} style={cellStyle}><span style={{ fontSize: '8px' }}>radial, axial, mixed flow</span></td>
+                        <td colSpan={2} style={cellStyle}><span style={{ fontSize: '8px' }}>15 kW &lt; M 300kW</span></td>
+                        <td colSpan={2} style={cellStyle}><span style={{ fontSize: '8px' }}>300 kW &lt; M &lt; 50MW</span></td>
+                    </tr>
 
-                {/* 4.5 Line */}
-                <tr>
-                    {/* Grp 4 Red. Grp 3,2,1 Yellow. */}
-                    {renderRowCells([RED, YEL, YEL, YEL])}
-                    <td style={valueCellStyle}>4.5</td><td style={valueCellStyle}>0.18</td>
-                </tr>
+                    {/* Row 4: Mount/Motor */}
+                    <tr>
+                        <td colSpan={2} style={cellStyle}>Integrated Driver</td>
+                        <td colSpan={2} style={cellStyle}>External Driver</td>
+                        <td colSpan={2} style={cellStyle}>Motors<br />160mm &lt; H &lt; 315mm</td>
+                        <td colSpan={2} style={cellStyle}>Motors<br />315mm &lt;= H</td>
+                    </tr>
 
-                {/* Row 3.5 - 4.5 gap */}
-                <tr>
-                    {/* Grp 4 Yellow. Grp 3,2 Green. Grp 1 Yellow. */}
-                    {renderRowCells([YEL, GRN, GRN, YEL])}
-                    <td style={valueCellStyle}>3.5</td><td style={valueCellStyle}>0.11</td>
-                </tr>
-
-                {/* 2.8 line */}
-                <tr>
-                    {/* Grp 4 Yellow. Grp 3,2,1 Green. */}
-                    {renderRowCells([YEL, GRN, GRN, GRN])}
-                    <td style={valueCellStyle}>2.8</td><td style={valueCellStyle}>0.07</td>
-                </tr>
-
-                {/* 2.3 Line */}
-                <tr>
-                    {/* Grp 4,3,2,1 Green. */}
-                    {renderRowCells([GRN, GRN, GRN, GRN])}
-                    <td style={valueCellStyle}>2.3</td><td style={valueCellStyle}>0.04</td>
-                </tr>
-
-                {/* 1.4 Line */}
-                <tr>
-                    {/* Grp 4 Green. Grp 3,2,1 Blue. */}
-                    {renderRowCells([GRN, BLU, BLU, BLU])}
-                    <td style={valueCellStyle}>1.4</td><td style={valueCellStyle}>0.03</td>
-                </tr>
-
-                {/* 0.71 Line */}
-                <tr>
-                    {/* All Blue */}
-                    {renderRowCells([BLU, BLU, BLU, BLU])}
-                    <td style={valueCellStyle}>0.71</td><td style={valueCellStyle}>0.02</td>
-                </tr>
-
-                {/* Units */}
-                <tr>
-                    <td colSpan={8} style={{ border: 'none', borderRight: '1px solid #000', borderBottom: '1px solid #000' }}></td>
-                    <td style={headerCellStyle}>mm/s</td><td style={headerCellStyle}>in/s</td>
-                </tr>
-
-                {/* Footer Headers */}
-                {/* Rigid / Flexible x 4 */}
-                <tr>
-                    <td style={cellStyle}>Rigid</td><td style={cellStyle}>Flexible</td>
-                    <td style={cellStyle}>Rigid</td><td style={cellStyle}>Flexible</td>
-                    <td style={cellStyle}>Rigid</td><td style={cellStyle}>Flexible</td>
-                    <td style={cellStyle}>Rigid</td><td style={cellStyle}>Flexible</td>
-                    <td colSpan={3} style={headerCellStyle}>Foundation</td>
-                </tr>
-
-                {/* Machine Types - Row 1 (Headers) */}
-                <tr>
-                    <td colSpan={4} style={cellStyle}>Pumps &gt; 15 kW</td>
-                    <td colSpan={2} style={cellStyle}>Medium sized Machines</td>
-                    <td colSpan={2} style={cellStyle}>Large Machines</td>
-                    <td colSpan={3} rowSpan={3} style={{ ...headerCellStyle, verticalAlign: 'middle' }}>Machine Type</td>
-                </tr>
-
-                {/* Machine Types - Row 2 (Details) */}
-                <tr>
-                    <td colSpan={4} style={cellStyle}><span style={{ fontSize: '8px' }}>radial, axial, mixed flow</span></td>
-                    <td colSpan={2} style={cellStyle}><span style={{ fontSize: '8px' }}>15 kW &lt; M 300kW</span></td>
-                    <td colSpan={2} style={cellStyle}><span style={{ fontSize: '8px' }}>300 kW &lt; M &lt; 50MW</span></td>
-                </tr>
-
-                {/* Driver/Motor Details */}
-                <tr>
-                    <td colSpan={2} style={cellStyle}>Integrated Driver</td> {/* Group 4 */}
-                    <td colSpan={2} style={cellStyle}>External Driver</td> {/* Group 3 */}
-                    <td colSpan={2} style={cellStyle}>Motors<br />160mm &lt; H &lt; 315mm</td> {/* Group 2 */}
-                    <td colSpan={2} style={cellStyle}>Motors<br />315mm &lt;= H</td> {/* Group 1 */}
-                </tr>
-
-                {/* Group Labels */}
-                <tr>
-                    <td colSpan={2} style={{ ...headerCellStyle, backgroundColor: '#fff' }}>Group 4</td>
-                    <td colSpan={2} style={{ ...headerCellStyle, backgroundColor: '#fff' }}>Group 3</td>
-                    <td colSpan={2} style={{ ...headerCellStyle, backgroundColor: '#fff' }}>Group 2</td>
-                    <td colSpan={2} style={{ ...headerCellStyle, backgroundColor: '#fff' }}>Group 1</td>
-                    <td colSpan={3} style={headerCellStyle}>Group</td>
-                </tr>
+                    {/* Row 5: Group */}
+                    <tr>
+                        <td colSpan={2} style={{ ...boldCellStyle, borderBottom: '2px solid #000' }}>Group 4</td>
+                        <td colSpan={2} style={{ ...boldCellStyle, borderBottom: '2px solid #000' }}>Group 3</td>
+                        <td colSpan={2} style={{ ...boldCellStyle, borderBottom: '2px solid #000' }}>Group 2</td>
+                        <td colSpan={2} style={{ ...boldCellStyle, borderBottom: '2px solid #000' }}>Group 1</td>
+                        <td colSpan={3} style={{ ...boldCellStyle, borderBottom: '2px solid #000' }}>Group</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     );
@@ -278,7 +213,23 @@ const getStatusColor = (status) => {
     return '#000';
 };
 
-const MachineReport = forwardRef(({ machine, measurements = [], observations = [], recommendations = [], fftData = [] }, ref) => {
+// Helper: Calculate number of pages this machine's report will take
+export const calculateMachinePageCount = (measurements = [], fftData = [], skipMatrix = false) => {
+    // 1. Matrix Page (skipMatrix ? 0 : 1)
+    const matrixPages = skipMatrix ? 0 : 1;
+    // 2. Details Page (always 1)
+    const detailsPages = 1;
+    // 3. Measurement Pages
+    const measurementsPerPage = 15;
+    const measurePages = measurements.length > 0 ? Math.ceil(measurements.length / measurementsPerPage) : 1;
+    // 4. Chart Pages
+    const chartsPerPage = 2;
+    const chartPages = Math.ceil(fftData.length / chartsPerPage);
+
+    return matrixPages + detailsPages + measurePages + chartPages;
+};
+
+const MachineReport = forwardRef(({ machine, measurements = [], observations = [], recommendations = [], fftData = [], skipMatrix = false, startPageNum = 0, globalTotalPages = null }, ref) => {
     const currentDate = new Date().toLocaleDateString('en-GB');
 
     // CHUNK DATA
@@ -295,35 +246,34 @@ const MachineReport = forwardRef(({ machine, measurements = [], observations = [
     const chartsPerPage = 2;
     const fftChunks = [];
     if (fftData.length === 0) {
-        // fftChunks.push([]); // Do not push empty if no charts, maybe simple message or skip
+        // fftChunks.push([]); // Do not push empty if no charts
     } else {
         for (let i = 0; i < fftData.length; i += chartsPerPage) {
             fftChunks.push(fftData.slice(i, i + chartsPerPage));
         }
     }
 
-    // CALCULATE TOTAL PAGES
-    // Fixed Pages:
-    // Page 1: Severity Matrix
-    // Page 2: Details + Obs + Rec
-    // Page 3...N: Measurements
-    // Page N+1...M: Charts
-    const fixedPages = 2;
+    // CALCULATE TOTAL PAGES (or use override)
+    const fixedPages = skipMatrix ? 1 : 2; // Matrix + Details (or just Details)
     const measurePages = measurementChunks.length > 0 ? measurementChunks.length : 1;
     const chartPages = fftChunks.length;
-    const totalPages = fixedPages + measurePages + chartPages;
+    const localTotalPages = fixedPages + measurePages + chartPages;
+    const totalPages = globalTotalPages || localTotalPages;
 
-    let pageCount = 0;
+    let pageCount = startPageNum;
 
     return (
         <div ref={ref} style={{ background: '#555', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-            {/* PAGE 1: SEVERITY MATRIX */}
-            <Page machine={machine} reportDate={currentDate} pageNum={pageCount++} totalPages={totalPages}>
-                <div style={{ marginBottom: '10px', color: getStatusColor(machine?.statusName), fontWeight: 'bold' }}>Status: {machine?.statusName || 'N/A'}</div>
-                <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Area Name: {machine?.areaId || 'N/A'}</div>
-                <SeverityMatrix />
-            </Page>
+            {/* PAGE 1: SEVERITY MATRIX (Optional) */}
+            {!skipMatrix && (
+                <Page machine={machine} reportDate={currentDate} pageNum={pageCount++} totalPages={totalPages}>
+                    <div style={{ color: 'red', fontSize: '10px' }}>DEBUG: Measurements: {measurements.length}, FFT: {fftData.length}, Bearings: {machine?.bearings?.length}</div>
+                    <div style={{ marginBottom: '10px', color: getStatusColor(machine?.statusName), fontWeight: 'bold' }}>Status: {machine?.statusName || 'N/A'}</div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Area Name: {machine?.areaId || 'N/A'}</div>
+                    <SeverityMatrix />
+                </Page>
+            )}
 
             {/* PAGE 2: MACHINE DETAILS + OBS/REC */}
             <Page machine={machine} reportDate={currentDate} pageNum={pageCount++} totalPages={totalPages}>
@@ -443,6 +393,77 @@ const MachineReport = forwardRef(({ machine, measurements = [], observations = [
                 </Page>
             ))}
 
+        </div>
+    );
+});
+
+export const CombinedMachineReport = forwardRef(({ machinesData = [] }, ref) => {
+    // Matrix Page is Page 0 for calc, but displayed as 1
+    // Combined Report:
+    // So if startPageNum is 0, First Page is 1.
+    // Combined Report:
+    // Page 0: Global Matrix (Displayed as 1)
+    // Page 1...: Machine 1 (Displayed as 2...)
+
+    // 1. Calculate Global Total Pages
+    let totalPages = 1; // 1 for Matrix
+
+    // Cache page counts to avoid recalculating during render
+    const machinePageCounts = machinesData.map(data =>
+        calculateMachinePageCount(data.measurements, data.fftData, true) // skipMatrix = true
+    );
+
+    totalPages += machinePageCounts.reduce((sum, c) => sum + c, 0);
+
+    let pageCounter = 0; // Current Page Index (0-based)
+
+    return (
+        <div ref={ref} style={{ background: '#555', padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* Page 1: Global Severity Matrix */}
+            <Page machine={{ name: "Combined Report" }} reportDate={new Date().toLocaleDateString('en-GB')} pageNum={pageCounter++} totalPages={totalPages}>
+                <div style={{ marginBottom: '10px', fontWeight: 'bold' }}>Multi-Machine Analysis Report</div>
+                <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Generated on: {new Date().toLocaleDateString('en-GB')}</div>
+                <SeverityMatrix />
+            </Page>
+
+            {/* Machine Reports */}
+            {machinesData.map((data, idx) => {
+                const count = machinePageCounts[idx];
+                const content = (
+                    <div key={idx} style={{ display: 'contents' }}> {/* Wrapper to avoid breaking flex layout if needed, but MachineReport returns a div. */}
+                        {/* We need to render the CONTENT of MachineReport, but MachineReport renders a wrapper div. 
+                             This wrapper div style (padding/flex) might double up. 
+                             Ideally MachineReport should return Fragments of Pages?
+                             But MachineReport returns a div with ref.
+                             If we render multiple MachineReports, we get multiple wrapper divs.
+                             That is fine as long as html2canvas sees them.
+                             BUT we want seamless PDF. html2canvas captures the ROOT ref.
+                             So we will have:
+                             <CombinedContent>
+                               <Page .../>
+                               <MachineReportWrapper>...<Page/></MachineReportWrapper>
+                               ...
+                             </CombinedContent>
+                             The inner wrapper style might add padding/background which is weird for print?
+                             The inner wrapper has `background: #555`.
+                             We should override style for inner reports to be transparent?
+                         */}
+                        <MachineReport
+                            {...data}
+                            skipMatrix={true}
+                            startPageNum={pageCounter}
+                            globalTotalPages={totalPages}
+                        // Override style to remove padding/background for inner components if they are stacked
+                        // Actually MachineReport style: background #555, padding 20px.
+                        // If we nest them, we get gaps.
+                        // PDF generation queries `.report-page`. It ignores the container wrappers.
+                        // So visual display in hidden div doesn't matter much, as long as `.report-page` elements are siblings or descendants.
+                        />
+                    </div>
+                );
+                pageCounter += count;
+                return content;
+            })}
         </div>
     );
 });

@@ -26,7 +26,7 @@
   padding: 20px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
 }
 
@@ -71,7 +71,7 @@
 .filterInput:focus {
   border-color: #6366f1;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 /* Date inputs */
@@ -85,8 +85,8 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   padding: 1.5rem;
 }
 
@@ -126,7 +126,7 @@
 .machineTable tbody tr:hover {
   background: #f8fafc;
   transform: scale(1.001);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .machineTable tbody tr:nth-child(even) {
@@ -140,8 +140,10 @@
 .machineNameCell {
   font-weight: 600;
   color: #2563eb;
-  background: rgba(219,234,254,0.4); /* lighter, less pronounced */
-  border-radius: 0.25rem; /* smaller radius */
+  background: rgba(219, 234, 254, 0.4);
+  /* lighter, less pronounced */
+  border-radius: 0.25rem;
+  /* smaller radius */
 }
 
 .statusCell {
@@ -163,7 +165,7 @@
   line-height: 1;
   min-width: 7rem;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease;
 }
 
@@ -180,7 +182,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.08);
 }
 
 .spinner {
@@ -193,7 +195,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .emptyState {
@@ -205,7 +209,7 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.08);
 }
 
 .pagination {
@@ -263,7 +267,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, rgba(15,23,42,0.45), rgba(99,102,241,0.18));
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.45), rgba(99, 102, 241, 0.18));
   backdrop-filter: blur(4px) saturate(1.05);
   z-index: 2000;
   padding: 2rem;
@@ -275,10 +279,10 @@
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  background: rgba(255,255,255,0.95);
+  background: rgba(255, 255, 255, 0.95);
   padding: 28px 36px;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(14,30,37,0.18);
+  box-shadow: 0 8px 30px rgba(14, 30, 37, 0.18);
   text-align: center;
   min-width: 320px;
   max-width: 90%;
@@ -309,7 +313,44 @@
 /* When overlay is active, slightly dim the content underneath for graceful UX */
 .dimmedContent {
   filter: blur(0.5px) saturate(0.95);
-  pointer-events: none; /* prevents accidental clicks */
+  pointer-events: none;
+  /* prevents accidental clicks */
   user-select: none;
   opacity: 0.98;
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+}
+
+.checkboxReset {
+  all: revert !important;
+  accent-color: #4f46e5 !important;
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
 }

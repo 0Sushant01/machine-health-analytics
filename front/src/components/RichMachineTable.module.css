@@ -194,3 +194,99 @@
 .emptyState p {
   color: #64748b;
 }
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(79, 70, 229, 0.4);
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #94a3b8;
+  box-shadow: none;
+}
+
+.checkboxReset {
+  all: revert !important;
+  accent-color: #4f46e5 !important;
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline-block !important;
+}
+
+/* Fullscreen loading overlay */
+.fullscreenLoadingOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.45), rgba(99, 102, 241, 0.18));
+  backdrop-filter: blur(4px) saturate(1.05);
+  z-index: 2000;
+  padding: 2rem;
+  pointer-events: auto;
+}
+
+.overlayBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 28px 36px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(14, 30, 37, 0.18);
+  text-align: center;
+  min-width: 320px;
+  max-width: 90%;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.overlayMessage {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.overlaySub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
